@@ -1,5 +1,5 @@
 %% Demo query variables
-providerName = 'IMFEPM211';
+providerName = 'IMFEPM21';
 preferredFlow = 'QUANTHUB,BOP6,1.2';
 preferredDimensionId = 'FREQ';
 preferredDimensionValue = 'A';
