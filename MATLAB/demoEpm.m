@@ -14,7 +14,7 @@ preferredDimensionValue = 'A';
 provides = getProviders();
 if ~strcmp(provides, providerName)
     disp(['Register new provider ' providerName]);
-    addProvider(providerName, 'https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1', false, true, false, 'IMF EPAM provider');
+    addProvider(providerName, 'https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1', false, false, true, 'IMF EPAM provider');
 end
 
 %% Get and display data flows
@@ -61,7 +61,11 @@ function result = findPreferred(values, preferred, valuesName)
     result = values(find(strcmp(values, preferred), 1));
     if isempty(result)
         disp(['Can''t find preferred ' valuesName ': ' preferred]);
-        result = values(1);
+        if isempty(values)
+            error(['There are no elements in ' valuesName]);
+        else
+            result = values(1);
+        end
     end
     result = result{1};
     disp(['Select ' valuesName ': ' result]);

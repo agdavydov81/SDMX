@@ -7,9 +7,12 @@ import it.bancaditalia.oss.sdmx.client.RestSdmxClient;
 import it.bancaditalia.oss.sdmx.event.DataFooterMessageEvent;
 import it.bancaditalia.oss.sdmx.event.RestSdmxEvent;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
+import it.bancaditalia.oss.sdmx.exceptions.SdmxInvalidParameterException;
 import it.bancaditalia.oss.sdmx.parser.v21.CompactDataParser;
 import it.bancaditalia.oss.sdmx.parser.v21.DataParsingResult;
+import it.bancaditalia.oss.sdmx.parser.v21.Sdmx21Queries;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,5 +39,17 @@ public class IMFEPM extends RestSdmxClient {
             dataFooterMessageEventListener.onSdmxEvent(event);
         }
         return ts;
+    }
+
+    protected URL buildDSDQuery(String dsd, String agency, String version, boolean full) throws SdmxException {
+        if (endpoint != null && agency != null && !agency.isEmpty() && dsd != null && !dsd.isEmpty()) {
+            final Sdmx21Queries query = Sdmx21Queries.createStructureQuery(endpoint, dsd, agency, version, false);
+            if (full) {
+                query.addParam("references", "descendants");
+            }
+            return query.buildSdmx21Query();
+        } else {
+            throw new RuntimeException("Invalid query parameters: agency=" + agency + " dsd=" + dsd + " endpoint=" + endpoint);
+        }
     }
 }
