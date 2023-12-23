@@ -81,11 +81,8 @@ public class AvailabilityParser implements Parser<Map<String, List<String>>>
 				{
 					codes = new ArrayList<String>();
 
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (id.equals(attr.getName().getLocalPart()))
 							dimension = attr.getValue();
 					}

@@ -118,11 +118,8 @@ public class CodelistParser implements Parser<Codelist>
 					value = new LocalizedText(languages);
 					key = null;
 
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (valueID.equals(attr.getName().getLocalPart()))
 							key = attr.getValue();
 					}
@@ -133,11 +130,8 @@ public class CodelistParser implements Parser<Codelist>
 					parent = true;
 				else if (parent && REF.equals(startElement.getName().getLocalPart()))
 				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (valueID.equals(attr.getName().getLocalPart()))
 						{
 							parents.put(key, attr.getValue());

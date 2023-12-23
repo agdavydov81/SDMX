@@ -67,11 +67,8 @@ public class SeriesCountParser implements Parser<Integer>
 				StartElement startElement = event.asStartElement();
 				if (ANNOTATION.equals(startElement.getName().getLocalPart()))
 				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (ID.equals(attr.getName().getLocalPart()) && attr.getValue().equals(SERIES_COUNT))
 							isTSNumber=true;
 					}

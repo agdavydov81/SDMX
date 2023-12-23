@@ -236,11 +236,9 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 				{
 					logger.finer("Got dimension");
 					
-					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
-					while (attributes.hasNext())
+					for (final Attribute attribute : (Iterable<Attribute>)startElement::getAttributes)
 					{
-						Attribute attribute = attributes.next();
 						if (attribute.getName().toString().equals(ID))
 						{
 							id = attribute.getValue();
@@ -270,12 +268,9 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 				{
 					logger.finer("Got time dimension");
 					currentDimension = null;
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
-					while (attributes.hasNext())
+					for (final Attribute attribute : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attribute = attributes.next();
 						if (attribute.getName().toString().equals(ID))
 							id = attribute.getValue();
 					}
@@ -420,11 +415,9 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 				{
 					logger.finer("Got primary measure");
 					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
-					while (attributes.hasNext())
+					for (final Attribute attribute : (Iterable<Attribute>)startElement::getAttributes)
 					{
-						Attribute attribute = attributes.next();
 						if (attribute.getName().toString().equals(ID))
 						{
 							id = attribute.getValue();
@@ -515,10 +508,7 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 
 				switch (startElement.getName().getLocalPart()) {
 					case "ConceptScheme": {
-						@SuppressWarnings("unchecked")
-						Iterator<Attribute> attributes = startElement.getAttributes();
-						while (attributes.hasNext()) {
-							Attribute attr = attributes.next();
+						for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes) {
 							switch (attr.getName().toString()) {
 								case AGENCYID: agency = attr.getValue(); break;
 								case VERSION: version = attr.getValue(); break;
@@ -528,12 +518,9 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 					}
 
 					case CONCEPT: {
-						@SuppressWarnings("unchecked")
-						Iterator<Attribute> attributes = startElement.getAttributes();
 						String id = null;
 						String conceptName = "";
-						while (attributes.hasNext()) {
-							Attribute attr = attributes.next();
+						for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes) {
 							if (attr.getName().toString().equals(ID)) {
 								id = attr.getValue();
 							}
