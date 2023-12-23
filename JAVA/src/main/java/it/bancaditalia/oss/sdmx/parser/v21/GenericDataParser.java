@@ -97,7 +97,7 @@ public class GenericDataParser implements Parser<DataParsingResult>{
 					case OBS: if (data) obs.add(getObservation(eventReader)); break;
 				}
 			}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (SERIES))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(SERIES))
 				tsList.add(new PortableTimeSeries<>(dataflow, dimKeys, attrValues, obs));
 		}
 		
@@ -170,7 +170,7 @@ public class GenericDataParser implements Parser<DataParsingResult>{
 					attributes.put(id, val);
 				}
 			}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (ATTRIBUTES))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(ATTRIBUTES))
 				return attributes;
 		}
 
@@ -190,26 +190,26 @@ public class GenericDataParser implements Parser<DataParsingResult>{
 			
 			if (event.isStartElement()) {
 				StartElement startElement = event.asStartElement();
-				if (startElement.getName().getLocalPart() == (OBS_TIME))
+				if (startElement.getName().getLocalPart().equals(OBS_TIME))
 				{
 					for (Attribute attribute: (Iterable<Attribute>) startElement::getAttributes)
 						if (attribute.getName().toString().equals(VALUE))
 							time = attribute.getValue();
 				}
-				else if (startElement.getName().getLocalPart() == (OBS_VALUE))
+				else if (startElement.getName().getLocalPart().equals(OBS_VALUE))
 				{
 					for (Attribute attribute: (Iterable<Attribute>) startElement::getAttributes)
 						if (attribute.getName().toString().equals(VALUE))
 							val = attribute.getValue();
 				}
-				else if (startElement.getName().getLocalPart() == (ATTRIBUTEVALUE))
+				else if (startElement.getName().getLocalPart().equals(ATTRIBUTEVALUE))
 				{
 					String name = startElement.getAttributeByName(new QName(ID)).getValue();
 					String value = startElement.getAttributeByName(new QName(VALUE)).getValue();
 					obs_attr.put(name, value);
 				}
 			}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (OBS))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(OBS))
 				try
 				{
 					return new DoubleObservation(time, Double.valueOf(val), obs_attr);

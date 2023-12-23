@@ -51,12 +51,13 @@ public class SDMXReference
 
 	protected String getFullIdWithSep(char sep)
 	{
-		String fullId = id;
+		final StringBuilder sb = new StringBuilder();
 		if (agency != null)
-			fullId = agency + sep + fullId;
+			sb.append(agency).append(sep);
+		sb.append(id);
 		if (version != null)
-			fullId = fullId + sep + version;
-		return fullId;
+			sb.append(sep).append(version);
+		return sb.toString();
 	}
 	
 	@Override

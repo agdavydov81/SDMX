@@ -25,21 +25,21 @@ public class IMFEPM extends RestSdmxClient {
         super(IMFEPM.class.getSimpleName(), new URI(ENPTY_POINT), false, false, true);
     }
 
-    @Override
-    protected DataParsingResult getData(Dataflow dataflow, DataFlowStructure dsd, String resource, String startTime, String endTime, boolean serieskeysonly,
-                                        String updatedAfter, boolean includeHistory) throws SdmxException {
-        URL query = buildDataQuery(dataflow, resource, startTime, endTime, serieskeysonly, updatedAfter, includeHistory);
-        String dumpName = "data_" + dataflow.getId() + "_" + resource; //.replaceAll("\\p{Punct}", "_");
-        DataParsingResult ts = runQuery(new CompactDataParser(dsd, dataflow, !serieskeysonly), query,
-                ACCEPT_XML, dumpName);
-        Message msg = ts.getMessage();
-        if (msg != null) {
-            LOGGER.log(Level.INFO, "The sdmx call returned messages in the footer:\n {0}", msg);
-            RestSdmxEvent event = new DataFooterMessageEvent(query, msg);
-            dataFooterMessageEventListener.onSdmxEvent(event);
-        }
-        return ts;
-    }
+//    @Override
+//    protected DataParsingResult getData(Dataflow dataflow, DataFlowStructure dsd, String resource, String startTime, String endTime, boolean serieskeysonly,
+//                                        String updatedAfter, boolean includeHistory) throws SdmxException {
+//        URL query = buildDataQuery(dataflow, resource, startTime, endTime, serieskeysonly, updatedAfter, includeHistory);
+//        String dumpName = "data_" + dataflow.getId() + "_" + resource; //.replaceAll("\\p{Punct}", "_");
+//        DataParsingResult ts = runQuery(new CompactDataParser(dsd, dataflow, !serieskeysonly), query,
+//                ACCEPT_DEFAULT, dumpName);
+//        Message msg = ts.getMessage();
+//        if (msg != null) {
+//            LOGGER.log(Level.INFO, "The sdmx call returned messages in the footer:\n {0}", msg);
+//            RestSdmxEvent event = new DataFooterMessageEvent(query, msg);
+//            dataFooterMessageEventListener.onSdmxEvent(event);
+//        }
+//        return ts;
+//    }
 
     protected URL buildDSDQuery(String dsd, String agency, String version, boolean full) throws SdmxException {
         if (endpoint != null && agency != null && !agency.isEmpty() && dsd != null && !dsd.isEmpty()) {

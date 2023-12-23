@@ -34,11 +34,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import it.bancaditalia.oss.sdmx.api.Codelist;
-import it.bancaditalia.oss.sdmx.api.DataFlowStructure;
-import it.bancaditalia.oss.sdmx.api.Dimension;
-import it.bancaditalia.oss.sdmx.api.SDMXReference;
-import it.bancaditalia.oss.sdmx.api.SdmxAttribute;
+import it.bancaditalia.oss.sdmx.api.*;
 import it.bancaditalia.oss.sdmx.client.Parser;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxXmlContentException;
@@ -93,6 +89,7 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 		List<DataFlowStructure> result = new ArrayList<>();
 		Map<String, Codelist> codelists = null;
 		Map<String, String> concepts = null;
+		Map<String, ConceptScheme> conceptsEx = null;
 		DataFlowStructure currentStructure = null;
 
 		LocalizedText currentName = new LocalizedText(languages);
@@ -105,32 +102,31 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 			{
 				StartElement startElement = event.asStartElement();
 
-				if (startElement.getName().getLocalPart() == (DATASTRUCTURE))
+				switch (startElement.getName().getLocalPart())
 				{
-					logger.finer("Got data structure.");
-					currentName = new LocalizedText(languages);
-					String id = null, agency = null, version = null;
-					for (Attribute attr: (Iterable<Attribute>) startElement::getAttributes)
-						switch (attr.getName().toString())
-						{
-							case ID: id = attr.getValue(); break;
-							case AGENCYID: agency = attr.getValue(); break;
-							case VERSION: version = attr.getValue(); break;
-						}
+					case DATASTRUCTURE: {
+						logger.finer("Got data structure.");
+						currentName = new LocalizedText(languages);
+						String id = null, agency = null, version = null;
+						for (final Attribute attr: (Iterable<Attribute>) startElement::getAttributes)
+							switch (attr.getName().toString())
+							{
+								case ID: id = attr.getValue(); break;
+								case AGENCYID: agency = attr.getValue(); break;
+								case VERSION: version = attr.getValue(); break;
+							}
 
-					currentStructure = new DataFlowStructure(id, agency, version);
-				}
-				else
-					switch (startElement.getName().getLocalPart())
-					{
-						case NAME: currentName.setText(startElement, eventReader); break;
-						case CODELISTS: codelists = getCodelists(eventReader, languages); break;
-						case CONCEPTS: concepts = getConcepts(eventReader, languages); break; 
-						case DIMENSIONLIST: setStructureDimensions(currentStructure, eventReader, codelists, concepts); break;
-						case GROUP: setStructureGroups(currentStructure, eventReader); break;
-						case ATTRIBUTELIST: setStructureAttributes(currentStructure, eventReader, codelists, concepts); break;
-						case MEASURELIST: setStructureMeasures(currentStructure, eventReader); break;
+						currentStructure = new DataFlowStructure(id, agency, version);
+						break;
 					}
+					case NAME: currentName.setText(startElement, eventReader); break;
+					case CODELISTS: codelists = getCodelists(eventReader, languages); break;
+					case CONCEPTS: conceptsEx = ConceptSchemeParser.parse(eventReader, languages); break;
+					case DIMENSIONLIST: setStructureDimensions(currentStructure, eventReader, codelists, concepts); break;
+					case GROUP: setStructureGroups(currentStructure, eventReader); break;
+					case ATTRIBUTELIST: setStructureAttributes(currentStructure, eventReader, codelists, concepts); break;
+					case MEASURELIST: setStructureMeasures(currentStructure, eventReader); break;
+				}
 			}
 
 			if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(DATASTRUCTURE))
@@ -240,7 +236,6 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 				{
 					logger.finer("Got dimension");
 					
-					@SuppressWarnings("unchecked")
 					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
 					while (attributes.hasNext())
@@ -481,24 +476,14 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 				if (startElement.getName().getLocalPart().equals(CODELIST))
 				{
 					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
 					String agency = null;
 					String version = null;
-					while (attributes.hasNext())
-					{
-						Attribute attr = attributes.next();
-						if (attr.getName().toString().equals(ID))
-						{
-							id = attr.getValue();
-						}
-						else if (attr.getName().toString().equals(AGENCYID))
-						{
-							agency = attr.getValue();
-						}
-						else if (attr.getName().toString().equals(VERSION))
-						{
-							version = attr.getValue();
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes) {
+						switch (attr.getName().toString()) {
+							case ID: id = attr.getValue(); break;
+							case AGENCYID: agency = attr.getValue(); break;
+							case VERSION: version = attr.getValue(); break;
 						}
 					}
 					logger.finer("Got codelist: " + id);
@@ -506,12 +491,8 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 					codelists.put(codes.getFullIdentifier(), codes);
 				}
 			}
-			if (event.isEndElement())
-			{
-				if (event.asEndElement().getName().getLocalPart().equals(CODELISTS))
-				{
-					break;
-				}
+			if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(CODELISTS)) {
+				break;
 			}
 		}
 
@@ -532,40 +513,36 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 			{
 				StartElement startElement = event.asStartElement();
 
-				if (startElement.getName().getLocalPart().equals("ConceptScheme"))
-				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
-					{
-						Attribute attr = attributes.next();
-						if (attr.getName().toString().equals(AGENCYID))
-						{
-							agency = attr.getValue();
+				switch (startElement.getName().getLocalPart()) {
+					case "ConceptScheme": {
+						@SuppressWarnings("unchecked")
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attr = attributes.next();
+							switch (attr.getName().toString()) {
+								case AGENCYID: agency = attr.getValue(); break;
+								case VERSION: version = attr.getValue(); break;
+							}
 						}
-						else if (attr.getName().toString().equals(VERSION))
-						{
-							version = attr.getValue();
-						}
+						break;
 					}
-				}
-				else if (startElement.getName().getLocalPart().equals(CONCEPT))
-				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					String id = null;
-					String conceptName = "";
-					while (attributes.hasNext())
-					{
-						Attribute attr = attributes.next();
-						if (attr.getName().toString().equals(ID))
-						{
-							id = attr.getValue();
+
+					case CONCEPT: {
+						@SuppressWarnings("unchecked")
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						String id = null;
+						String conceptName = "";
+						while (attributes.hasNext()) {
+							Attribute attr = attributes.next();
+							if (attr.getName().toString().equals(ID)) {
+								id = attr.getValue();
+							}
 						}
+						conceptName = agency + "/" + id + "/" + version;
+						logger.finer("Got concept: " + conceptName);
+						concepts.put(conceptName, getConceptName(eventReader, languages));
+						break;
 					}
-					conceptName = agency + "/" + id + "/" + version;
-					logger.finer("Got concept: " + conceptName);
-					concepts.put(conceptName, getConceptName(eventReader, languages));
 				}
 			}
 			if (event.isEndElement())
@@ -590,7 +567,7 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 			if (event.isStartElement())
 			{
 				StartElement startElement = event.asStartElement();
-				if (startElement.getName().getLocalPart() == ("Name"))
+				if (startElement.getName().getLocalPart().equals("Name"))
 				{
 					value.setText(startElement, eventReader);
 				}
@@ -620,27 +597,16 @@ public class DataStructureParser implements Parser<List<DataFlowStructure>>
 			if (event.isStartElement())
 			{
 				StartElement startElement = event.asStartElement();
-				if (startElement.getName().getLocalPart() == (REF))
+				if (startElement.getName().getLocalPart().equals(REF))
 				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
 					String id = null;
 					String version = "";
 					String agency = "";
-					while (attributes.hasNext())
-					{
-						Attribute attribute = attributes.next();
-						if (attribute.getName().toString().equals(ID))
-						{
-							id = attribute.getValue();
-						}
-						else if (attribute.getName().toString().equals(AGENCYID))
-						{
-							agency = attribute.getValue();
-						}
-						else if (attribute.getName().toString().equals("maintainableParentVersion"))
-						{
-							version = attribute.getValue();
+					for(final Attribute attribute : (Iterable<Attribute>) startElement::getAttributes) {
+						switch (attribute.getName().toString()) {
+							case ID: id = attribute.getValue(); break;
+							case AGENCYID: agency = attribute.getValue(); break;
+							case "maintainableParentVersion": version = attribute.getValue(); break;
 						}
 					}
 					name = concepts.get(agency + "/" + id + "/" + version);
