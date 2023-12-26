@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static it.bancaditalia.oss.sdmx.parser.v20.DataStructureParser.*;
-import static it.bancaditalia.oss.sdmx.parser.v20.DataStructureParser.CONCEPTSCHEME;
 
 public class ConceptParser {
     private static final String sourceClass = CodelistParser.class.getSimpleName();
@@ -36,7 +35,7 @@ public class ConceptParser {
 
         final LocalizedText name = new LocalizedText(languages);
         final LocalizedText description = new LocalizedText(languages);
-        SDMXReference coreRepresentation = null;
+        String coreRepresentation = null;
 
         while (eventReader.hasNext()) {
             XMLEvent event = eventReader.nextEvent();
@@ -52,7 +51,7 @@ public class ConceptParser {
                         description.setText(startElement, eventReader);
                         break;
                     case COREREPRESENTATION:
-                        coreRepresentation = parseCoreRepresentation(startElement, eventReader, languages);
+                        coreRepresentation = parseCoreRepresentationFullId(startElement, eventReader, languages);
                         break;
                 }
             }
@@ -64,9 +63,9 @@ public class ConceptParser {
         return new Concept(reference, name, description, coreRepresentation);
     }
 
-    private static SDMXReference parseCoreRepresentation(final StartElement coreStartElement,
-                                                         final XMLEventReader eventReader,
-                                                         final List<Locale.LanguageRange> languages)
+    private static String parseCoreRepresentationFullId(final StartElement coreStartElement,
+                                                        final XMLEventReader eventReader,
+                                                        final List<Locale.LanguageRange> languages)
             throws XMLStreamException, SdmxException {
 
         SDMXReference ref = null;
@@ -85,7 +84,7 @@ public class ConceptParser {
             }
         }
 
-        return ref;
+        return ref != null ? ref.getFullIdentifier() : null;
     }
 
     private static SDMXReference parseEnumeration(final StartElement coreStartElement,

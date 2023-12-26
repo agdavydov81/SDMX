@@ -7,34 +7,34 @@ import java.util.Map;
 public class Concept extends SDMXReference {
     private LocalizedText name = null;
     private LocalizedText description = null;
-    private SDMXReference coreRepresentation = null;
+    private String coreRepresentationFullId = null;
 
     public Concept(final String id, final String agency, final String version) {
         super(id, agency, version);
         name = null;
         description = null;
-        coreRepresentation = null;
+        coreRepresentationFullId = null;
     }
 
     public Concept(final SDMXReference coordinates,
                    final LocalizedText name,
                    final LocalizedText description,
-                   final SDMXReference coreRepresentation) {
+                   final String coreRepresentationFullId) {
         super(coordinates);
         this.name = name;
         this.description = description;
-        this.coreRepresentation = coreRepresentation;
+        this.coreRepresentationFullId = coreRepresentationFullId;
     }
 
     public String getName() {
-        return name != null ? name.getText() : null;
+        return name != null ? name.getText() : "";
     }
 
     public String getDescription() {
         return description != null ? description.getText() : null;
     }
 
-    public SDMXReference getCoreRepresentation() {
-        return coreRepresentation;
+    public String getCoreRepresentationFullId() {
+        return coreRepresentationFullId != null ? coreRepresentationFullId : "";
     }
 }
