@@ -308,8 +308,6 @@ public class RestSdmxClient implements GenericSDMXClient {
         return buildDataQuery(dataflow, resource, startTime, endTime, seriesKeyOnly, updatedAfter, includeHistory).toString();
     }
 
-    private static final String CACHE_ROOT = "C:/Users/Andrei_Davydau1/Projects/IMF/SDMX/JAVA/cache";
-
     /**
      * Returns a reader over the result of an http query.
      *
@@ -327,24 +325,17 @@ public class RestSdmxClient implements GenericSDMXClient {
         LOGGER.log(Level.INFO, "Contacting web service with query: {0}", query);
 
         try {
+            int code;
             url = query;
             URL originalURL = url;
-
-            final String cacheName = originalURL.toString()
-                    .replace(':', '-')
-                    .replace('/', '-')
-                    .replace('?', '-');
-            final File cacheFile = new File(CACHE_ROOT, cacheName);
-            final InputStream cacheStream = cacheFile.isFile() ? Files.newInputStream(cacheFile.toPath()) : null;
 
             Proxy proxy = (proxySelector != null ? proxySelector : ProxySelector.getDefault()).select(url.toURI()).get(0);
             LOGGER.fine("Using proxy: " + proxy);
 
             openEventListener.onSdmxEvent(new OpenEvent(url, acceptHeader, getLanguages(), proxy));
 
-            int code = cacheStream != null ? HttpURLConnection.HTTP_OK : HttpURLConnection.HTTP_MULT_CHOICE;
             int redirects = 0;
-            while (isRedirection(code) && !(isMaxRedirectionReached(redirects))) {
+            do {
                 conn = url.openConnection(proxy);
 
                 if (conn instanceof HttpsURLConnection && sslSocketFactory != null) {
@@ -392,7 +383,7 @@ public class RestSdmxClient implements GenericSDMXClient {
                     url = redirection;
                     redirects++;
                 }
-            }
+            } while (isRedirection(code) && !(isMaxRedirectionReached(redirects)));
 
             if (isMaxRedirectionReached(redirects)) {
                 throw new SdmxRedirectionException("Max redirection reached");
@@ -400,30 +391,16 @@ public class RestSdmxClient implements GenericSDMXClient {
 
             if (code == HttpURLConnection.HTTP_OK) {
                 LOGGER.fine("Connection opened. Code: " + code);
-                // InputStream stream = conn.getInputStream();
-                if (cacheStream == null) {
-                    InputStream input = conn.getInputStream();
-                    String encoding = conn.getContentEncoding() == null ? "" : conn.getContentEncoding();
-                    if (encoding.equalsIgnoreCase("gzip"))
-                        input = new GZIPInputStream(input);
-                    else if (encoding.equalsIgnoreCase("deflate"))
-                        input = new InflaterInputStream(input);
-                    else if (conn.getContentType() != null && conn.getContentType().contains("application/octet-stream")) {
-                        input = new ZipInputStream(input);
-                        ((ZipInputStream) input).getNextEntry();
-                    }
-
-                    final byte[] cacheBuffer = new byte[64 * 1024];
-                    try (final OutputStream output = new FileOutputStream(cacheFile, false)) {
-                        int size;
-                        while ((size = input.read(cacheBuffer)) >= 0) {
-                            output.write(cacheBuffer, 0, size);
-                        }
-                    }
-
-                    input.close();
+                InputStream stream = conn.getInputStream();
+                String encoding = conn.getContentEncoding() == null ? "" : conn.getContentEncoding();
+                if (encoding.equalsIgnoreCase("gzip"))
+                    stream = new GZIPInputStream(stream);
+                else if (encoding.equalsIgnoreCase("deflate"))
+                    stream = new InflaterInputStream(stream);
+                else if (conn.getContentType() != null && conn.getContentType().contains("application/octet-stream")) {
+                    stream = new ZipInputStream(stream);
+                    ((ZipInputStream) stream).getNextEntry();
                 }
-                InputStream stream = Files.newInputStream(cacheFile.toPath());
 
                 if (Configuration.isDumpXml() && dumpName != null) // skip providers < sdmx v2.1
                 {
