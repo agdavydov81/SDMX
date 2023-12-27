@@ -178,7 +178,7 @@ public class RestSdmxClient implements GenericSDMXClient {
         Map<String, Dataflow> result = null;
         URL query = buildFlowQuery(ALL_AGENCIES, "all", latestKeyword);
         List<Dataflow> flows = runQuery(new DataflowParser(), query, ACCEPT_DEFAULT, "dataflow_all");
-        if (flows.size() > 0) {
+        if (!flows.isEmpty()) {
             result = new HashMap<>();
             for (Dataflow dataflow : flows)
                 result.put(dataflow.getFullIdentifier(), dataflow);
@@ -195,7 +195,7 @@ public class RestSdmxClient implements GenericSDMXClient {
         if (version == null) version = this.latestKeyword;
         URL query = buildFlowQuery(dataflow, agency, version);
         List<Dataflow> flows = runQuery(new DataflowParser(), query, ACCEPT_DEFAULT, "dataflow_" + dataflow);
-        if (flows.size() >= 1)
+        if (!flows.isEmpty())
             result = flows.get(0);
         else
             throw new SdmxXmlContentException("The query returned zero dataflows");
@@ -458,7 +458,7 @@ public class RestSdmxClient implements GenericSDMXClient {
             LOGGER.log(Level.FINER, "Exception: ", e);
             throw SdmxExceptionFactory.wrap(e);
         } finally {
-            if (conn != null && conn instanceof HttpURLConnection)
+            if (conn instanceof HttpURLConnection)
                 ((HttpURLConnection) conn).disconnect();
         }
     }
@@ -476,9 +476,9 @@ public class RestSdmxClient implements GenericSDMXClient {
             conn.setRequestProperty("Authorization", "Basic " + auth);
         }
         if (supportsCompression) {
-            conn.addRequestProperty("Accept-Encoding", "gzip, deflate");
+            conn.addRequestProperty("Accept-Encoding", "gzip,deflate");
         }
-        if (acceptHeader != null && !"".equals(acceptHeader))
+        if (acceptHeader != null && !acceptHeader.isEmpty())
             conn.setRequestProperty("Accept", acceptHeader);
         else
             conn.setRequestProperty("Accept", "*/*");
