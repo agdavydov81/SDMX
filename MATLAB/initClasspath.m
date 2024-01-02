@@ -19,15 +19,10 @@
 % permissions and limitations under the Licence.
 %
 
-function initClasspath() 
+function initClasspath()
     jarLoaded = exist('it.bancaditalia.oss.sdmx.helper.SDMXHelper', 'class');
     if jarLoaded ~= 8
-        mFilesLoaded = exist('sdmxHelp.m', 'file');
-        if mFilesLoaded == 2
-            pathToJar = fileparts(which('sdmxHelp'));
-            javaaddpath([pathToJar, '/lib/SDMX.jar']);
-        else
-            error('Error: the m-files of the MatSDMX toolbox cannot be found in the MATLAB path');
-        end
+        mpath = fileparts(mfilename('fullpath'));
+        javaaddpath(fullfile(mpath, 'lib', 'SDMX.jar'));
     end
 end

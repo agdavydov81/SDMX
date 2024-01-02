@@ -6,7 +6,7 @@ function dfs = getDataFlowStructure(provider, dataflow)
 	% Arguments
 	%
 	% provider: the name of the SDMX data provider
-	% dataflow: the dataflow to be analyzed   
+	% dataflow: the dataflow to be analyzed
 	%
 	% #############################################################################################
 	% Copyright 2010,2014 Bank Of Italy
@@ -28,10 +28,10 @@ function dfs = getDataFlowStructure(provider, dataflow)
 	% express or implied.
 	% See the Licence for the specific language governing
 	% permissions and limitations under the Licence.
-	% 
+	%
 
     initClasspath;
-    
+
     if nargin <2
         error(sprintf([ '\nUsage: getDataFlowStructure(provider, dataflow)\n\n' ...
                     'Arguments\n\n' ...
@@ -41,49 +41,58 @@ function dfs = getDataFlowStructure(provider, dataflow)
     end
     %try java code
     try
-        jdfs = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getDataFlowStructure(provider, dataflow);
+        jdfs = javaMethod('getDataFlowStructure', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, dataflow);
     catch mexp
-        error(['SDMX getDataFlowStructure() error:\n' mexp.message]);             
+        error(['SDMX getDataFlowStructure() error:\n' mexp.message]);
     end
-	
-    dfs = struct('id', char(jdfs.getId()), ...
-                 'agency', char(jdfs.getAgency()), ...
-                 'version', char(jdfs.getVersion()), ...
-                 'name', char(jdfs.getName()), ...
-                 'timeDimension', char(jdfs.getTimeDimension()), ...
-                 'primaryMeasure', char(jdfs.getMeasure()), ...
-                 'dimensions', mapDimensions(jdfs.getDimensions()), ...
-                 'attributes', mapAttributes(jdfs.getAttributes()));
+
+    dimensions = javaMethod('getDimensions', jdfs);
+    attributes = javaMethod('getAttributes', jdfs);
+
+    dfs = struct('id', javaMethod('getId', jdfs), ...
+                 'agency', javaMethod('getAgency', jdfs), ...
+                 'version', javaMethod('getVersion', jdfs), ...
+                 'name', javaMethod('getName', jdfs), ...
+                 'timeDimension', javaMethod('getTimeDimension', jdfs), ...
+                 'primaryMeasure', javaMethod('getMeasure', jdfs), ...
+                 'dimensions', mapDimensions(dimensions), ...
+                 'attributes', mapAttributes(attributes));
 end
 
 function mds = mapDimensions(jds)
-    mds = cell(jds.size(), 1);
+    mds = cell(javaMethod('size', jds), 1);
     for di = 1:length(mds)
-        mds{di} = mapMetaElement(jds.get(di - 1));
+        mds{di} = mapMetaElement(javaMethod('get', jds, di - 1));
     end
     mds = cell2mat(mds);
 end
 
 function md = mapMetaElement(jd)
-    md = struct('id', char(jd.getId()), ...
-                'name', char(jd.getName()), ...
-                'codelist', mapCodeList(jd.getCodeList()));
+    md = struct('id', javaMethod('getId', jd), ...
+                'name', javaMethod('getName', jd), ...
+                'codelist', mapCodeList(javaMethod('getCodeList', jd)));
 end
 
 function mcl = mapCodeList(jcl)
     if isempty(jcl)
         mcl = containers.Map();
     else
-        mcl = containers.Map( ...
-            cell(jcl.keySet().toArray()), ...
-            cell(jcl.values().toArray()));
+        jKeys = jcl.keySet().toArray();
+        jValues = jcl.values().toArray();
+        sz = javaMethod('getLength', 'java.lang.reflect.Array', jKeys);
+
+        keys = arrayfun(@(i) javaMethod('get', 'java.lang.reflect.Array', jKeys, i), (0:sz-1)', 'UniformOutput', false);
+  	    values = arrayfun(@(i) javaMethod('get', 'java.lang.reflect.Array', jValues, i), (0:sz-1)', 'UniformOutput', false);
+
+        mcl = containers.Map(keys, values);
     end
 end
 
 function mas = mapAttributes(jas)
-    mas = cell(jas.size(), 1);
+    mas = cell(javaMethod('size', jas), 1);
     for di = 1:length(mas)
-        mas{di} = mapMetaElement(jas.get(di - 1));
+        mas{di} = mapMetaElement(javaMethod('get', jas, di - 1));
     end
     mas = cell2mat(mas);
 end
+

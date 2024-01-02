@@ -1,5 +1,5 @@
 %% Demo query variables
-providerName = 'IMFEPM21';
+providerName = 'IMFEPM';
 preferredFlow = 'QUANTHUB,BOP6,1.2';
 preferredDimensionId = 'FREQ';
 preferredDimensionValue = 'A';
@@ -24,7 +24,7 @@ if isempty(flowKeys)
     error('No flows are found');
 end
 disp('Next flows are found:');
-disp([flowKeys; flows.values]);
+disp(flowKeys);
 
 %% Select data flow
 dataFlow = findPreferred(flowKeys, preferredFlow, 'data flow');
@@ -36,7 +36,7 @@ disp('Next DSD is found:');
 disp(dsd);
 
 disp('With dimensions:');
-disp({dsd.dimensions.id; dsd.dimensions.name});
+disp(dsd.dimensions.id);
 
 %% Select dimension
 dimensionSel.id = findPreferred({dsd.dimensions.id}, preferredDimensionId, 'dimension');
@@ -44,7 +44,11 @@ dimensionSel.index = find(strcmp({dsd.dimensions.id}, dimensionSel.id), 1);
 dimensionSel.value = findPreferred(dsd.dimensions(dimensionSel.index).codelist.keys, preferredDimensionValue, 'dimension value');
 
 %% Select all time series with specified preferred dimension name and value
-tsListRequest = selectDimension(dataFlow, dsd, dimensionSel);
+dims = cell(2, length(dsd.dimensions));
+dims{1, dimensionSel.index} = dimensionSel.value;
+dims(2, 1:end-1) = {'.'};
+tsListRequest = [dataFlow '/' dims{:}];
+
 tsList = getTimeSeries(providerName, tsListRequest);
 
 %% Display first time series
@@ -54,27 +58,4 @@ ts.plot();
 
 %% Or get time series as table
 tsTbl = getTimeSeriesTable(providerName, regexprep(ts.Name, '\.[^\.]+$', '.*'));
-
-
-%% Auxiliary functions
-function result = findPreferred(values, preferred, valuesName)
-    result = values(find(strcmp(values, preferred), 1));
-    if isempty(result)
-        disp(['Can''t find preferred ' valuesName ': ' preferred]);
-        if isempty(values)
-            error(['There are no elements in ' valuesName]);
-        else
-            result = values(1);
-        end
-    end
-    result = result{1};
-    disp(['Select ' valuesName ': ' result]);
-end
-
-function request = selectDimension(dataFlow, dsd, dimensionSel)
-    dims = cell(2, length(dsd.dimensions));
-    dims{1, dimensionSel.index} = dimensionSel.value;
-    dims(2, 1:end-1) = {'.'};
-    request = [dataFlow '/' dims{:}];
-end
 

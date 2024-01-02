@@ -24,13 +24,16 @@ function providers = getProviders()
 	% See the Licence for the specific language governing
 	% permissions and limitations under the Licence.
 	%
-    
+
     initClasspath;
-    
-    try        
-        providers = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getProviders();
-        providers = cell(providers.keySet.toArray);
+
+    try
+        providers = javaMethod('getProviders','it.bancaditalia.oss.sdmx.client.SdmxClientHandler');
+        arr = providers.keySet().toArray();
+        sz = javaMethod('getLength', 'java.lang.reflect.Array', arr);
+        providers = arrayfun(@(i) javaMethod('get', 'java.lang.reflect.Array', arr, i), (0:sz-1)', 'UniformOutput', false);
     catch mexp
-        error(['SDMX getProviders() error:\n' mexp.message]);         
+        error(['SDMX getProviders() error: ' mexp.message]);
     end
 end
+

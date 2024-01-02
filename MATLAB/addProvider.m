@@ -1,5 +1,5 @@
 function addProvider(name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description)
-	% Add a new provider to the internal registry. The provider has to be 
+	% Add a new provider to the internal registry. The provider has to be
     % fully compliant with the SDMX 2.1 specifications
     %
     % Usage: addProvider('ECB_TEST', 'http://sdw-wsrest.ecb.europa.eu/service', false, false, false, 'Sample ECB provider')
@@ -34,25 +34,25 @@ function addProvider(name, endpoint, needsCredentials, needsURLEncoding, support
 	% See the Licence for the specific language governing
 	% permissions and limitations under the Licence.
 	%
-    
+
     %deal with arguments
-    
+
     initClasspath;
-    
+
     if nargin <2
         error(sprintf(['\nUsage: addProvider(name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description)\n\n' ...
             'Arguments\n\n' ...
             'name: the name of the provider\n' ...
             'endpoint:  the URL where the provider resides\n' ...
             'needsCredentials:   set this to TRUE if the user needs to authenticate to query the provider\n' ...
-            'needsURLEncoding:   set this to TRUE if the provider does not handle character "+" in URLs\n' ...      
-            'supportsCompression:   set this to TRUE if the provider is able to handle compression\n' ...      
-            'description:   a brief text description of the provider\n' ...      
+            'needsURLEncoding:   set this to TRUE if the provider does not handle character "+" in URLs\n' ...
+            'supportsCompression:   set this to TRUE if the provider is able to handle compression\n' ...
+            'description:   a brief text description of the provider\n' ...
         ]));
-    end    
+    end
     if nargin < 6
         description = '';
-    end    
+    end
     if nargin < 5
         supportsCompression = false;
     end
@@ -62,13 +62,13 @@ function addProvider(name, endpoint, needsCredentials, needsURLEncoding, support
     if nargin < 3
         needsCredentials = false;
     end
-       
+
     %try java code
     try
-        it.bancaditalia.oss.sdmx.client.SdmxClientHandler.addProvider(name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description); 
-	catch mexp
-        error(sprintf('SDMX addProvider() error:\n %s', mexp.message));            
+%        javaMethod('addProvider', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description);
+    catch mexp
+        error(sprintf('SDMX addProvider() error:\n %s', mexp.message));
     end
-        
+
 end
 
