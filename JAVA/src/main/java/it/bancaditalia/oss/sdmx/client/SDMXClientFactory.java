@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.NavigableMap;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +45,8 @@ import it.bancaditalia.oss.sdmx.exceptions.SdmxInvalidParameterException;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxUnknownProviderException;
 import it.bancaditalia.oss.sdmx.util.Configuration;
 import it.bancaditalia.oss.sdmx.util.SdmxProxySelector;
+
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.*;
 
 /**
  * <p>Java Factory class for creating the Sdmx Clients.

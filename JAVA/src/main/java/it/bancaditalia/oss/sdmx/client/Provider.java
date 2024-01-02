@@ -39,6 +39,9 @@ import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.SDMXReference;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
 
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.BASIC;
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.BEARER;
+
 /**
  * 
  * @author Valentino Pinna
@@ -49,7 +52,7 @@ public class Provider {
 	private String description;
 	private URI endpoint;
 	private String sdmxVersion;
-	private boolean needsCredentials;
+	private String authorization;
 	private boolean needsURLEncoding;
 	private boolean supportsCompression;
 	private boolean full = false;
@@ -61,7 +64,14 @@ public class Provider {
 	private Map<String, DataFlowStructure> dsdNameToStructureCache = null;
 	private SSLSocketFactory sslSocketFactory;
 
-	public Provider(String name, URI endpoint, KeyStore trustStore, boolean needsCredentials, 
+	public Provider(String name, URI endpoint, KeyStore trustStore, boolean needsCredentials,
+					boolean needsURLEncoding, boolean supportsCompression, String description,
+					boolean isCustom, String sdmxVersion) throws SdmxException {
+		this(name, endpoint, trustStore, needsCredentials ? BASIC : null,
+				needsURLEncoding, supportsCompression,  description, isCustom,  sdmxVersion);
+	}
+
+	public Provider(String name, URI endpoint, KeyStore trustStore, String authorization,
 			boolean needsURLEncoding, boolean supportsCompression, String description, 
 			boolean isCustom, String sdmxVersion) throws SdmxException {
 		this.name = name;
@@ -69,7 +79,7 @@ public class Provider {
 		this.description = description;
 		this.flows = new HashMap<>();
 		this.dsdNameToStructureCache = new HashMap<>();
-		this.needsCredentials = needsCredentials;
+		this.authorization = authorization;
 		this.needsURLEncoding = needsURLEncoding;
 		this.supportsCompression = supportsCompression;
 		this.isCustom = isCustom;
@@ -167,11 +177,15 @@ public class Provider {
 	}
 
 	public boolean isNeedsCredentials() {
-		return needsCredentials;
+		return BASIC.equals(authorization) || BEARER.equals(authorization);
 	}
 
-	public void setNeedsCredentials(boolean needsCredentials) {
-		this.needsCredentials = needsCredentials;
+	public String getAuthorization() {
+		return authorization;
+	}
+
+	public void setAuthorization(String authorization) {
+		this.authorization = authorization;
 	}
 
 	public void setFull(boolean full) {

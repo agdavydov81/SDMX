@@ -725,12 +725,12 @@ public class SdmxClientHandler
 				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				LoginDialog loginDlg = new LoginDialog(frame, client.getName() + " Authentication");
 				loginDlg.setVisible(true);
-				client.setCredentials(loginDlg.getUsername(), loginDlg.getPassword());
+				client.setAuthorization(RestSdmxClient.authorizationBasic(loginDlg.getUsername(), loginDlg.getPassword()));
 				frame.dispose();
 			}
 			else
 			{
-				client.setCredentials(user, pw);
+				client.setAuthorization(RestSdmxClient.authorizationBasic(user, pw));
 			}
 		}
 	}

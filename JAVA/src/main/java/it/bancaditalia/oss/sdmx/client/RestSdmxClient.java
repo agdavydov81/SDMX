@@ -96,10 +96,7 @@ public class RestSdmxClient implements GenericSDMXClient {
     protected HostnameVerifier hostnameVerifier;
     protected final boolean dotStat = false;
     protected /* final */ URI endpoint;
-    protected boolean needsCredentials = false;
-    protected boolean containsCredentials = false;
-    protected String user = null;
-    protected String pw = null;
+    protected String authorization = null;
     protected int readTimeout;
     protected int connectTimeout;
     protected RestSdmxEventListener dataFooterMessageEventListener = RestSdmxEventListener.NO_OP_LISTENER;
@@ -111,10 +108,21 @@ public class RestSdmxClient implements GenericSDMXClient {
     protected final String ALL_AGENCIES = "all";
     protected String latestKeyword = LATEST_VERSION;
 
+    public static final String ACCEPT_LANGUAGE = "Accept-Language";
+    public static final String ACCEPT_ENCODING = "Accept-Encoding";
+    public static final String ACCEPT = "Accept";
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String BASIC = "Basic";
+    public static final String BEARER = "Bearer";
+
     public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, boolean needsCredentials, boolean needsURLEncoding, boolean supportsCompression) {
+        this(name, endpoint, sslSocketFactory, needsCredentials ? BASIC : null,  needsURLEncoding, supportsCompression);
+    }
+
+    public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, String authorization, boolean needsURLEncoding, boolean supportsCompression) {
         this.endpoint = endpoint;
         this.name = name;
-        this.needsCredentials = needsCredentials;
+        this.authorization = authorization;
         this.needsURLEncoding = needsURLEncoding;
         this.supportsCompression = supportsCompression;
         this.proxySelector = null;
@@ -126,7 +134,12 @@ public class RestSdmxClient implements GenericSDMXClient {
     }
 
     public RestSdmxClient(String name, URI endpoint, boolean needsCredentials, boolean needsURLEncoding, boolean supportsCompression) {
-        this(name, endpoint, null, needsCredentials, needsURLEncoding, supportsCompression);
+        this(name, endpoint, null, needsCredentials ? BASIC : null, needsURLEncoding, supportsCompression);
+    }
+
+
+    public RestSdmxClient(String name, URI endpoint, String authorization, boolean needsURLEncoding, boolean supportsCompression) {
+        this(name, endpoint, null, authorization, needsURLEncoding, supportsCompression);
     }
 
     public void setProxySelector(ProxySelector proxySelector) {
@@ -263,15 +276,12 @@ public class RestSdmxClient implements GenericSDMXClient {
 
     @Override
     public boolean needsCredentials() {
-        return needsCredentials;
+        return BASIC.equals(authorization) || BEARER.equals(authorization);
     }
 
     @Override
-    public void setCredentials(String user, String pw) {
-        this.user = user;
-        this.pw = pw;
-        this.needsCredentials = false;
-        this.containsCredentials = true;
+    public void setAuthorization(final String authorization) {
+        this.authorization = authorization;
     }
 
     @Override
@@ -463,25 +473,33 @@ public class RestSdmxClient implements GenericSDMXClient {
         }
     }
 
+    public static String authorizationBasic(final String user, final String pw) {
+        // https://stackoverflow.com/questions/1968416/how-to-do-http-authentication-in-android/1968873#1968873
+        //String auth = Base64.encodeToString((user + ":" + pw).getBytes(), Base64.NO_WRAP);
+        String auth = java.util.Base64.getEncoder().encodeToString((user + ":" + pw).getBytes());
+        return BASIC + " " + auth;
+    }
+
+    public static String authorizationBearer(final String token) {
+        return BEARER + " " + token;
+    }
+
     protected void handleHttpHeaders(HttpURLConnection conn, String acceptHeader) {
         String lList = Configuration.getLanguages().stream()
                 .map(lr -> format(Locale.US, "%s;q=%.1f", lr.getRange(), lr.getWeight()))
                 .collect(joining(","));
-        conn.addRequestProperty("Accept-Language", lList);
-        if (containsCredentials) {
+        conn.addRequestProperty(ACCEPT_LANGUAGE, lList);
+        if (authorization != null && !authorization.isEmpty()) {
             LOGGER.fine("Setting http authorization");
-            // https://stackoverflow.com/questions/1968416/how-to-do-http-authentication-in-android/1968873#1968873
-            //String auth = Base64.encodeToString((user + ":" + pw).getBytes(), Base64.NO_WRAP);
-            String auth = java.util.Base64.getEncoder().encodeToString((user + ":" + pw).getBytes());
-            conn.setRequestProperty("Authorization", "Basic " + auth);
+            conn.setRequestProperty(AUTHORIZATION, authorization);
         }
         if (supportsCompression) {
-            conn.addRequestProperty("Accept-Encoding", "gzip,deflate");
+            conn.addRequestProperty(ACCEPT_ENCODING, "gzip,deflate");
         }
         if (acceptHeader != null && !acceptHeader.isEmpty())
-            conn.setRequestProperty("Accept", acceptHeader);
+            conn.setRequestProperty(ACCEPT, acceptHeader);
         else
-            conn.setRequestProperty("Accept", "*/*");
+            conn.setRequestProperty(ACCEPT, "*/*");
     }
 
     protected URL buildDataQuery(Dataflow dataflow, String resource, String startTime, String endTime, boolean serieskeysonly, String updatedAfter, boolean includeHistory) throws SdmxException {

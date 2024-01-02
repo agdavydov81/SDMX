@@ -159,10 +159,9 @@ public interface GenericSDMXClient {
 	/**
      * <p>Sets the security credentials for the provider to which this client will
      * be attached. 
-     * @param user the user name
-     * @param pw the password
+     * @param authorization Authorization header
      */
-	public void setCredentials(String user, String pw);
+	public void setAuthorization(String authorization);
 
 	/**
      * <p>Gets the URL of the web service for this provider client
