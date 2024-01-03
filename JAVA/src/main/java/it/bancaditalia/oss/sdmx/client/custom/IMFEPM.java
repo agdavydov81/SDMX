@@ -13,6 +13,7 @@ import it.bancaditalia.oss.sdmx.parser.v21.CompactDataParser;
 import it.bancaditalia.oss.sdmx.parser.v21.DataParsingResult;
 import it.bancaditalia.oss.sdmx.parser.v21.Sdmx21Queries;
 
+import javax.swing.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 
 public class IMFEPM extends RestSdmxClient {
     public static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
@@ -32,9 +34,54 @@ public class IMFEPM extends RestSdmxClient {
     public final static String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
     public final static String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
 
+    public static class EntryPointAndAuth {
+        final String entryPoint;
+        final String clientId;
+        final String authority;
+        final String[] scope;
+
+        public EntryPointAndAuth(final String entryPoint, final String clientId,
+                                 final String authority, final String[] scope) {
+            this.entryPoint = entryPoint;
+            this.clientId = clientId;
+            this.authority = authority;
+            this.scope = scope;
+        }
+
+        public static EntryPointAndAuth inputDialog() {
+            Preferences preferences = Preferences.userNodeForPackage(IMFEPM.class);
+
+            JTextField entryPoint = new JTextField(preferences.get("entryPoint", PUBLIC_ENTRY_POINT));
+            JTextField clientId = new JTextField(preferences.get("clientId", ""));
+            JTextField authority = new JTextField(preferences.get("authority", ""));
+            JTextField scope = new JTextField(preferences.get("scope", ""));
+
+            JTextField password = new JTextField();
+            Object[] message = {
+                    "Entry point:", entryPoint,
+                    "Client ID:", clientId,
+                    "Authority:", authority,
+                    "Scope:", scope
+            };
+
+            int option = JOptionPane.showConfirmDialog(null, message, "Provider configuration", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                preferences.put("entryPoint", entryPoint.getText());
+                preferences.put("clientId", clientId.getText());
+                preferences.put("authority", authority.getText());
+                preferences.put("scope", scope.getText());
+
+                return new EntryPointAndAuth(entryPoint.getText(), clientId.getText(), authority.getText(), new String[] {scope.getText()});
+            } else {
+                return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null);
+            }
+        }
+    }
+
 
     public IMFEPM() throws Exception {
-        this(PUBLIC_ENTRY_POINT, null, null, null);
+        this(EntryPointAndAuth.inputDialog());
+        // this(PUBLIC_ENTRY_POINT, null, null, null);
         // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
     }
 
@@ -105,6 +152,10 @@ public class IMFEPM extends RestSdmxClient {
         IAuthenticationResult iAuthenticationResult = acquireTokenInteractive(clientId, authority, scopeArray);
 
         return RestSdmxClient.authorizationBearer(iAuthenticationResult.accessToken());
+    }
+
+    public IMFEPM(final EntryPointAndAuth entryPointAndAuth) throws Exception {
+        this(entryPointAndAuth.entryPoint, entryPointAndAuth.clientId, entryPointAndAuth.authority, entryPointAndAuth.scope);
     }
 
     public IMFEPM(final String entryPoint, final String clientId, final String authority, final String[] scope) throws Exception {
