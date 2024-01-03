@@ -65,7 +65,7 @@ function addProvider(name, endpoint, needsCredentials, needsURLEncoding, support
 
     %try java code
     try
-%        javaMethod('addProvider', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description);
+        javaMethod('addProvider', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', name, endpoint, needsCredentials, needsURLEncoding, supportsCompression, description);
     catch mexp
         error(sprintf('SDMX addProvider() error:\n %s', mexp.message));
     end

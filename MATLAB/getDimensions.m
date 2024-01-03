@@ -41,7 +41,7 @@ function dimensions = getDimensions(provider, dataflow)
     end
     %try java call
     try
-        dim = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getDimensions(provider, dataflow);
+        dim = javaMethod('getDimensions', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, dataflow);
         dim = cell(dim.toArray);
         dimensions = cell(1,length(dim));
         for i=1:length(dim)

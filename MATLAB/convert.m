@@ -131,7 +131,7 @@ function dates = convertDates(freq, dates, iso8601Date)
 		dates=(cell2mat(dates));
 	elseif(strcmp(freq, 'W'))
 		for i = 1 : length(dates)
-			dates{i} = char(it.bancaditalia.oss.sdmx.util.WeekConverter.convert(dates{i}));
+			dates{i} = char(javaMethod('convert', 'it.bancaditalia.oss.sdmx.util.WeekConverter', dates{i}));
 		end
 		dates=(cell2mat(dates));
 	else

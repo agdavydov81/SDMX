@@ -44,7 +44,7 @@ end
 
 %get codes
 try
-    result = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getCodes(provider, flow, dimension);
+    result = javaMethod('getCodes', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, flow, dimension);
 catch mexp
     error(['SDMX getCodes() error:\n' mexp.message]);
 end
