@@ -196,6 +196,13 @@ public class SdmxClientHandler
 		}
 	}
 
+	public static void addProvider(final String provider,
+								   final String description,
+								   final String classFillName,
+								   final Object[] constructorArguments) throws SdmxInvalidParameterException {
+		SDMXClientFactory.addProvider(provider, description, classFillName, constructorArguments);
+	}
+
 	/**
 	 * Get the list of all available SDMX Providers
 	 * 

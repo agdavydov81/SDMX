@@ -23,27 +23,31 @@ import java.util.Set;
 import java.util.logging.Level;
 
 public class IMFEPM extends RestSdmxClient {
-    protected static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
+    public static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
 
 
-    protected static final String PROTECTED_ENTRY_POINT = "https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1";
+    public static final String PROTECTED_ENTRY_POINT = "https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1";
 
-    protected final static String PROTECTED_CLIENT_ID = "bf03b113-5aa3-4585-a7d4-4b98160ec4ff";
-    protected final static String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
-    protected final static String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
+    public final static String PROTECTED_CLIENT_ID = "bf03b113-5aa3-4585-a7d4-4b98160ec4ff";
+    public final static String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
+    public final static String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
 
 
     public IMFEPM() throws Exception {
-        // this(PUBLIC_ENTRY_POINT, null, null, null);
-        this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
+        this(PUBLIC_ENTRY_POINT, null, null, null);
+        // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
     }
 
     private static IAuthenticationResult acquireTokenInteractive(final String clientId,
                                                                  final String authority,
                                                                  final String[] scopeArray) throws Exception {
 
-        if (clientId == null || authority == null || scopeArray == null)
-            return null;
+        if (clientId == null || clientId.isEmpty())
+            throw new IllegalArgumentException("The clientId argument is null or empty.");
+        if (authority == null || authority.isEmpty())
+            throw new IllegalArgumentException("The authority argument is null or empty.");
+        if (scopeArray == null)
+            throw new IllegalArgumentException("The scopeArray argument is null.");
 
         final Set<String> scope = new LinkedHashSet<>(Arrays.asList(scopeArray));
 
@@ -95,9 +99,10 @@ public class IMFEPM extends RestSdmxClient {
                                                final String authority,
                                                final String[] scopeArray) throws Exception {
 
-        IAuthenticationResult iAuthenticationResult = acquireTokenInteractive(clientId, authority, scopeArray);
-        if (iAuthenticationResult == null)
+        if (clientId == null && authority == null && scopeArray == null)
             return null;
+
+        IAuthenticationResult iAuthenticationResult = acquireTokenInteractive(clientId, authority, scopeArray);
 
         return RestSdmxClient.authorizationBearer(iAuthenticationResult.accessToken());
     }

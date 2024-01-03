@@ -64,6 +64,16 @@ public class Provider {
 	private Map<String, DataFlowStructure> dsdNameToStructureCache = null;
 	private SSLSocketFactory sslSocketFactory;
 
+	private String fullClassName;
+	private Object[] constructorArguments;
+
+	public Provider(final String name, final String description, final String fullClassName, final Object[] constructorArguments) {
+		this.name = name;
+		this.description = description;
+		this.fullClassName = fullClassName;
+		this.constructorArguments = constructorArguments;
+	}
+
 	public Provider(String name, URI endpoint, KeyStore trustStore, boolean needsCredentials,
 					boolean needsURLEncoding, boolean supportsCompression, String description,
 					boolean isCustom, String sdmxVersion) throws SdmxException {
@@ -232,4 +242,11 @@ public class Provider {
 		this.sdmxVersion = sdmxVersion;
 	}
 
+	public String getFullClassName() {
+		return fullClassName;
+	}
+
+	public Object[] getConstructorArguments() {
+		return constructorArguments != null ? constructorArguments : new Object[]{};
+	}
 }

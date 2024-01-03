@@ -26,6 +26,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -224,6 +226,18 @@ public class SDMXClientFactory {
 		providers.put(name, p);
 	}
 
+	public static void addProvider(String name,
+								   String description,
+								   String classFillName,
+								   Object[] constructorArguments) throws SdmxInvalidParameterException {
+		if (name == null || name.trim().isEmpty()) {
+			LOGGER.severe("The name of the provider cannot be null");
+			throw new SdmxInvalidParameterException("The name of the provider cannot be null");
+		}
+
+		providers.put(name, new Provider(name, description, classFillName, constructorArguments));
+	}
+
 	/**
      * Add a builtin provider and check whether the default values need to be overwritten with values defined in the configuration file.
      * @throws SdmxException 
@@ -232,14 +246,15 @@ public class SDMXClientFactory {
     		final Boolean needsURLEncoding, final Boolean supportsCompression, final String description, 
     		boolean isCustom, String sdmxVersion) throws SdmxException {
         try {
-            final String providerName = Configuration.getConfiguration().getProperty("providers." + name + ".name", name);
-            final String providerEndpoint = Configuration.getConfiguration().getProperty("providers." + name + ".endpoint", endpoint);
+			final Properties configuration = Configuration.getConfiguration();
+			final String providerName = configuration.getProperty("providers." + name + ".name", name);
+            final String providerEndpoint = configuration.getProperty("providers." + name + ".endpoint", endpoint);
             final URI providerURL = null != providerEndpoint ? new URI(providerEndpoint) : null;
-            final boolean providerNeedsCredentials = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + name + ".needsCredentials", needsCredentials.toString()));
-            final boolean providerNeedsURLEncoding = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + name + ".needsURLEncoding", needsURLEncoding.toString()));
-            final boolean providerSupportsCompression = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + name + ".supportsCompression", supportsCompression.toString()));
-            final String providerDescription = Configuration.getConfiguration().getProperty("providers." + name + ".description", description);
-            final String providerSdmxVersion = Configuration.getConfiguration().getProperty("providers." + name + ".sdmxversion", sdmxVersion.toString());
+            final boolean providerNeedsCredentials = Boolean.parseBoolean(configuration.getProperty("providers." + name + ".needsCredentials", needsCredentials.toString()));
+            final boolean providerNeedsURLEncoding = Boolean.parseBoolean(configuration.getProperty("providers." + name + ".needsURLEncoding", needsURLEncoding.toString()));
+            final boolean providerSupportsCompression = Boolean.parseBoolean(configuration.getProperty("providers." + name + ".supportsCompression", supportsCompression.toString()));
+            final String providerDescription = configuration.getProperty("providers." + name + ".description", description);
+            final String providerSdmxVersion = configuration.getProperty("providers." + name + ".sdmxversion", sdmxVersion.toString());
             addProvider(providerName, providerURL, null, providerNeedsCredentials, providerNeedsURLEncoding, providerSupportsCompression, providerDescription, isCustom, providerSdmxVersion);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, "Exception. Class: {0} .Message: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
@@ -253,17 +268,18 @@ public class SDMXClientFactory {
      */
     private static void addExternalProvider(final String id) throws SdmxException {
         try {
-            final String providerName = Configuration.getConfiguration().getProperty("providers." + id + ".name", id);
-            final String providerEndpoint = Configuration.getConfiguration().getProperty("providers." + id + ".endpoint");
+			final Properties configuration = Configuration.getConfiguration();
+			final String providerName = configuration.getProperty("providers." + id + ".name", id);
+            final String providerEndpoint = configuration.getProperty("providers." + id + ".endpoint");
             if(providerEndpoint != null && !providerEndpoint.isEmpty()){
             	final URI providerURL = new URI(providerEndpoint);
-		        final boolean provdiderNeedsCredentials = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + id + ".needsCredentials", "false"));
-		        final boolean providerNeedsURLEncoding = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + id + ".needsURLEncoding", "false"));
-		        final boolean providerSupportsCompression = Boolean.parseBoolean(Configuration.getConfiguration().getProperty("providers." + id + ".supportsCompression", "false"));
-		        final String providerDescription = Configuration.getConfiguration().getProperty("providers." + id + ".description", id);
-	            final String providerSdmxVersion = Configuration.getConfiguration().getProperty("providers." + id + ".sdmxversion", SDMXClientFactory.SDMX_V2);
+		        final boolean provdiderNeedsCredentials = Boolean.parseBoolean(configuration.getProperty("providers." + id + ".needsCredentials", "false"));
+		        final boolean providerNeedsURLEncoding = Boolean.parseBoolean(configuration.getProperty("providers." + id + ".needsURLEncoding", "false"));
+		        final boolean providerSupportsCompression = Boolean.parseBoolean(configuration.getProperty("providers." + id + ".supportsCompression", "false"));
+		        final String providerDescription = configuration.getProperty("providers." + id + ".description", id);
+	            final String providerSdmxVersion = configuration.getProperty("providers." + id + ".sdmxversion", SDMXClientFactory.SDMX_V2);
 		        
-		        String trustStoreLocation = Configuration.getConfiguration().getProperty("providers." + id + ".trustStore", "");
+		        String trustStoreLocation = configuration.getProperty("providers." + id + ".trustStore", "");
 		        KeyStore providerTrustStore = null;
 		        if (!"".equals(trustStoreLocation))
 					try {
@@ -311,7 +327,38 @@ public class SDMXClientFactory {
 		}
 		String hostname = null;
 
-		if(provider != null && !provider.isCustom())
+		final String providerFullClassName = provider.getFullClassName();
+		if (providerFullClassName != null && !providerFullClassName.isEmpty()) {
+			try {
+				final Class<?> providerClass = Class.forName(providerFullClassName);
+
+				Object[] providerConstructorArguments = provider.getConstructorArguments();
+				Class<?>[] providerConstructorTypes = new Class[providerConstructorArguments.length];
+				for (int i=0; i<providerConstructorTypes.length; ++i) {
+					providerConstructorTypes[i] = providerConstructorArguments[i].getClass();
+				}
+
+				final Constructor<?> providerConstructor = providerClass.getConstructor(providerConstructorTypes);
+
+				Object clientInstance = providerConstructor.newInstance(providerConstructorArguments);
+
+				client = (GenericSDMXClient)clientInstance;
+
+			} catch (final ClassNotFoundException e) {
+				logger.severe("For provider " + providerName + " can't find class " + providerFullClassName);
+				throw new SdmxUnknownProviderException(providerName, e);
+			} catch (final NoSuchMethodException e) {
+				logger.severe("For provider " + providerName + " can't find class " + providerFullClassName + " constructor with specified constructor arguments (null arguments are not supported).");
+				throw new SdmxUnknownProviderException(providerName, e);
+			} catch (final InvocationTargetException | InstantiationException | IllegalAccessException e) {
+				logger.severe("For provider " + providerName + " can't instantiate class " + providerFullClassName + " constructor with specified constructor arguments.");
+				throw new SdmxUnknownProviderException(providerName, e);
+            } catch (final ClassCastException e) {
+				logger.severe("For provider " + providerName + " class " + providerFullClassName + " is not a " + GenericSDMXClient.class.getName() + " instance type.");
+				throw new SdmxUnknownProviderException(providerName, e);
+			}
+		}
+		else if(!provider.isCustom())
 		{
 			hostname = provider.getEndpoint().getHost();
 			if(provider.getEndpoint().getScheme().toLowerCase().startsWith("http")){
