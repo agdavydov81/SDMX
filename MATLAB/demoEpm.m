@@ -1,15 +1,12 @@
 %% Demo query variables
-providerName = 'IMFEPM-CUSTOM-002';
-preferredFlow = 'IMF,IMF_CPI_DATAFLOW,6.0.0';
-preferredDimensionId = 'FREQUENCY';
-preferredDimensionValue = 'M';
+providerName = 'IMFEPM-CUSTOM-003';
+preferredFlow = 'QUANTHUB,BOP6,1.2';
+preferredDimension = {'REF_AREA', '111';
+                      'FREQ', 'Q'};
 
 %providerName = 'EUROSTAT';
 %preferredFlow = 'ESTAT,AACT_ALI01,1.0';
-%preferredDimensionId = 'freq';
-%preferredDimensionValue = 'A';
-
-initClasspath;
+%preferredDimension = {'freq', 'A'};
 
 %% Add provider or find existing (added on the previous run)
 provides = getProviders();
@@ -17,7 +14,7 @@ if ~strcmp(provides, providerName)
     disp(['Register new provider ' providerName]);
 
     % final String entryPoint, final String clientId, final String authority, final String[] scope
-%{
+
     constructorArguments = javaArray('java.lang.Object', 4);
     constructorArguments(1) = javaObject('java.lang.String', 'https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1');
     constructorArguments(2) = javaObject('java.lang.String', 'bf03b113-5aa3-4585-a7d4-4b98160ec4ff');
@@ -25,10 +22,10 @@ if ~strcmp(provides, providerName)
     scope = javaArray('java.lang.String', 1);
     scope(1) = javaObject('java.lang.String', 'api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login');
     constructorArguments(4) = scope;
-%}
+%{
     constructorArguments = javaArray('java.lang.Object', 1);
     constructorArguments(1) = javaObject('java.lang.Boolean', true);
-
+%}
     addProvider(providerName, ['Description of the ' providerName], 'it.bancaditalia.oss.sdmx.client.custom.IMFEPM', constructorArguments);
 end
 
@@ -55,12 +52,20 @@ dsdDimensionsId = cellfun(@char, {dsd.dimensions.id}, 'UniformOutput',false);
 disp(dsdDimensionsId);
 
 %% Select dimension
-dimensionSel.id = findPreferred(dsdDimensionsId, preferredDimensionId, 'dimension');
-dimensionSel.index = find(strcmp(dsdDimensionsId, dimensionSel.id), 1);
-dimensionSel.value = findPreferred(dsd.dimensions(dimensionSel.index).codelist.keys, preferredDimensionValue, 'dimension value');
+dims = cell(2, length(dsd.dimensions));
+dims(2, 1:end-1) = {'.'};
+for di = 1:size(preferredDimension, 1)
+    preferredDimensionId = preferredDimension{di, 1};
+    preferredDimensionValue = preferredDimension{di, 2};
 
-%% Select all time series with specified preferred dimension name and value
-tsListRequest = selectDimension(dataFlow, dsd, dimensionSel);
+    dimensionSel.id = findPreferred(dsdDimensionsId, preferredDimensionId, 'dimension');
+    dimensionSel.index = find(strcmp(dsdDimensionsId, dimensionSel.id), 1);
+    dimensionSel.value = findPreferred(dsd.dimensions(dimensionSel.index).codelist.keys, preferredDimensionValue, 'dimension value');
+
+    % Select all time series with specified preferred dimension name and value
+    dims{1, dimensionSel.index} = dimensionSel.value;
+end
+tsListRequest = [dataFlow '/' dims{:}];
 tsList = getTimeSeries(providerName, tsListRequest);
 
 %% Display first time series
@@ -73,9 +78,11 @@ tsTbl = getTimeSeriesTable(providerName, regexprep(ts.Name, '\.[^\.]+$', '.*'));
 
 
 %% Auxiliary functions
-function result = findPreferred(values, preferred, valuesName)
+function [result, findSeccess] = findPreferred(values, preferred, valuesName)
     result = values(find(strcmp(values, preferred), 1));
+    findSeccess = true;
     if isempty(result)
+        findSeccess = false;
         disp(['Can''t find preferred ' valuesName ': ' preferred]);
         if isempty(values)
             error(['There are no elements in ' valuesName]);
@@ -86,11 +93,3 @@ function result = findPreferred(values, preferred, valuesName)
     result = result{1};
     disp(['Select ' valuesName ': ' result]);
 end
-
-function request = selectDimension(dataFlow, dsd, dimensionSel)
-    dims = cell(2, length(dsd.dimensions));
-    dims{1, dimensionSel.index} = dimensionSel.value;
-    dims(2, 1:end-1) = {'.'};
-    request = [dataFlow '/' dims{:}];
-end
-
