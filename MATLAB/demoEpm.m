@@ -8,6 +8,8 @@ preferredDimension = {'REF_AREA', '111';
 %preferredFlow = 'ESTAT,AACT_ALI01,1.0';
 %preferredDimension = {'freq', 'A'};
 
+
+
 %% Add provider or find existing (added on the previous run)
 provides = getProviders();
 if ~strcmp(provides, providerName)
@@ -29,6 +31,8 @@ if ~strcmp(provides, providerName)
     addProvider(providerName, ['Description of the ' providerName], 'it.bancaditalia.oss.sdmx.client.custom.IMFEPM', constructorArguments);
 end
 
+
+
 %% Get and display data flows
 flows = getFlows(providerName);
 flowKeys = flows.keys;
@@ -38,8 +42,12 @@ end
 disp('Next flows are found:');
 disp(flowKeys);
 
+
+
 %% Select data flow
 dataFlow = findPreferred(flowKeys, preferredFlow, 'data flow');
+
+
 
 %% Get and display DSD information
 dsd = getDataFlowStructure(providerName, dataFlow);
@@ -50,6 +58,8 @@ disp(dsd);
 disp('With dimensions:');
 dsdDimensionsId = cellfun(@char, {dsd.dimensions.id}, 'UniformOutput',false);
 disp(dsdDimensionsId);
+
+
 
 %% Select dimension
 dims = cell(2, length(dsd.dimensions));
@@ -68,13 +78,18 @@ end
 tsListRequest = [dataFlow '/' dims{:}];
 tsList = getTimeSeries(providerName, tsListRequest);
 
+
+
 %% Display first time series
 figure;
 ts = tsList{1};
 ts.plot();
 
+
+
 %% Or get time series as table
 tsTbl = getTimeSeriesTable(providerName, regexprep(ts.Name, '\.[^\.]+$', '.*'));
+
 
 
 %% Auxiliary functions
