@@ -71,18 +71,39 @@ public class IMFEPM extends RestSdmxClient {
                 preferences.put("authority", authority.getText());
                 preferences.put("scope", scope.getText());
 
-                return new EntryPointAndAuth(entryPoint.getText(), clientId.getText(), authority.getText(), new String[] {scope.getText()});
+                return new EntryPointAndAuth(entryPoint.getText(), clientId.getText(), authority.getText(), new String[]{scope.getText()});
             } else {
                 return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null);
             }
         }
     }
 
-
     public IMFEPM() throws Exception {
-        this(EntryPointAndAuth.inputDialog());
+        this(envShowInputDialog());
         // this(PUBLIC_ENTRY_POINT, null, null, null);
         // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
+    }
+
+    private static boolean envShowInputDialog() {
+        final String varName = IMFEPM.class.getSimpleName() + "_SHOWINPUTDIALOG";
+        final boolean showInputDialog;
+        {
+            String propValue = System.getProperty(varName);
+            propValue = propValue != null ? propValue.trim() : "";
+            if (!propValue.isEmpty()) {
+                showInputDialog = Boolean.parseBoolean(propValue);
+            } else {
+                showInputDialog = Boolean.parseBoolean(System.getenv(varName));
+            }
+        }
+
+        return showInputDialog;
+    }
+
+    public IMFEPM(final Boolean showInputDialog) throws Exception {
+        this(showInputDialog != null && showInputDialog
+                ? EntryPointAndAuth.inputDialog()
+                : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null));
     }
 
     private static IAuthenticationResult acquireTokenInteractive(final String clientId,
@@ -182,7 +203,7 @@ public class IMFEPM extends RestSdmxClient {
         if (endpoint != null && agency != null && !agency.isEmpty() && dsd != null && !dsd.isEmpty()) {
             final Sdmx21Queries query = Sdmx21Queries.createStructureQuery(endpoint, dsd, agency, version, false);
             if (full) {
-                query.addParam("references", "descendants");
+                query.addParam(REFERENCES, DESCENDANTS);
             }
             return query.buildSdmx21Query();
         } else {

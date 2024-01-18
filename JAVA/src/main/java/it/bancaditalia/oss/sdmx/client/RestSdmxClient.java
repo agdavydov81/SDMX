@@ -115,6 +115,10 @@ public class RestSdmxClient implements GenericSDMXClient {
     public static final String BASIC = "Basic";
     public static final String BEARER = "Bearer";
 
+    public static final String REFERENCES = "references";
+    public static final String DESCENDANTS = "descendants";
+    public static final String CHILDREN = DESCENDANTS; // "children";
+
     public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, boolean needsCredentials, boolean needsURLEncoding, boolean supportsCompression) {
         this(name, endpoint, sslSocketFactory, needsCredentials ? BASIC : null,  needsURLEncoding, supportsCompression);
     }

@@ -59,9 +59,9 @@ public class Provider {
 	private boolean isCustom = false;
 
 	// key: flow id (full) --> flow
-	private Map<String, Dataflow> flows; 
+	private Map<String, Dataflow> flows = new HashMap<>();
 	// key: dsd id (full) --> structure
-	private Map<String, DataFlowStructure> dsdNameToStructureCache = null;
+	private Map<String, DataFlowStructure> dsdNameToStructureCache = new HashMap<>();
 	private SSLSocketFactory sslSocketFactory;
 
 	private String fullClassName;
@@ -87,8 +87,6 @@ public class Provider {
 		this.name = name;
 		this.endpoint = endpoint;
 		this.description = description;
-		this.flows = new HashMap<>();
-		this.dsdNameToStructureCache = new HashMap<>();
 		this.authorization = authorization;
 		this.needsURLEncoding = needsURLEncoding;
 		this.supportsCompression = supportsCompression;

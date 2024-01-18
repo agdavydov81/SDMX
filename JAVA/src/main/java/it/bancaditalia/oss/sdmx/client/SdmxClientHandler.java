@@ -198,9 +198,9 @@ public class SdmxClientHandler
 
 	public static void addProvider(final String provider,
 								   final String description,
-								   final String classFillName,
+								   final String classFullName,
 								   final Object[] constructorArguments) throws SdmxInvalidParameterException {
-		SDMXClientFactory.addProvider(provider, description, classFillName, constructorArguments);
+		SDMXClientFactory.addProvider(provider, description, classFullName, constructorArguments);
 	}
 
 	/**
@@ -411,13 +411,17 @@ public class SdmxClientHandler
 			else
 			{
 				// this is a 2.1 provider
-				LOGGER.finer("Codelist for " + provider + ", " + dataflow + ", " + dimension + " not cached.");
-				codes = getClient(provider).getCodes(dsd.getDimension(dimension).getCodeList());
-				if (codes != null)
-					dim.setCodeList(codes);
-				else
+				try {
+					LOGGER.finer("Codelist for " + provider + ", " + dataflow + ", " + dimension + " not cached.");
+					codes = getClient(provider).getCodes(dsd.getDimension(dimension).getCodeList());
+					if (codes != null)
+						dim.setCodeList(codes);
+					else
+						throw new RuntimeException("CodeLists are null.");
+				} catch (Throwable e) {
 					throw new SdmxXmlContentException(
 							"Could not get codes for '" + dataflow + "' in provider: '" + provider + "'");
+				}
 			}
 		}
 		else

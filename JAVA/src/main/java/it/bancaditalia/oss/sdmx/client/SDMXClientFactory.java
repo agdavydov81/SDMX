@@ -87,7 +87,7 @@ public class SDMXClientFactory {
 
 	private static final String sourceClass = SDMXClientFactory.class.getSimpleName();
 	protected static Logger logger;
-	private static NavigableMap<String, Provider> providers;
+	private static final NavigableMap<String, Provider> providers;
 
 
 	/**
@@ -228,14 +228,14 @@ public class SDMXClientFactory {
 
 	public static void addProvider(String name,
 								   String description,
-								   String classFillName,
+								   String classFullName,
 								   Object[] constructorArguments) throws SdmxInvalidParameterException {
 		if (name == null || name.trim().isEmpty()) {
 			LOGGER.severe("The name of the provider cannot be null");
 			throw new SdmxInvalidParameterException("The name of the provider cannot be null");
 		}
 
-		providers.put(name, new Provider(name, description, classFillName, constructorArguments));
+		providers.put(name, new Provider(name, description, classFullName, constructorArguments));
 	}
 
 	/**

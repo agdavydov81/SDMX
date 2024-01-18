@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
+import it.bancaditalia.oss.sdmx.exceptions.SdmxXmlContentException;
 
 /**
  * @author Attilio Mattiocco

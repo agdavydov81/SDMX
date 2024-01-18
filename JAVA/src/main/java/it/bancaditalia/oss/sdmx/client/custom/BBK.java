@@ -61,7 +61,7 @@ public class BBK extends RestSdmxClient{
 	@Override
 	protected URL buildDSDQuery(String dsd, String agency, String version, boolean full) throws SdmxException {
 		try {
-			return new URL(endpoint + "/metadata/datastructure/BBK" + (dsd.equalsIgnoreCase("all") ? "" : ("/" + dsd)) + "?references=children");
+			return new URL(endpoint + "/metadata/datastructure/BBK" + (dsd.equalsIgnoreCase("all") ? "" : ("/" + dsd)) + "?" + REFERENCES + "=" + CHILDREN);
 		} catch (MalformedURLException e) {
 			throw new SdmxInvalidParameterException("Invalid query parameters: dsd: " + dsd + ", endpoint=" + endpoint);
 		}
