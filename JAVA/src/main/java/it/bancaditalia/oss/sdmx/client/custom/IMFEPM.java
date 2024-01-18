@@ -84,16 +84,17 @@ public class IMFEPM extends RestSdmxClient {
         // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
     }
 
-    private static boolean envShowInputDialog() {
+    private static Boolean envShowInputDialog() {
         final String varName = IMFEPM.class.getSimpleName() + "_SHOWINPUTDIALOG";
-        final boolean showInputDialog;
+        final Boolean showInputDialog;
         {
             String propValue = System.getProperty(varName);
             propValue = propValue != null ? propValue.trim() : "";
             if (!propValue.isEmpty()) {
                 showInputDialog = Boolean.parseBoolean(propValue);
             } else {
-                showInputDialog = Boolean.parseBoolean(System.getenv(varName));
+                final String envValue = System.getenv(varName);
+                showInputDialog = envValue != null ? Boolean.parseBoolean(envValue) : null;
             }
         }
 
@@ -101,7 +102,7 @@ public class IMFEPM extends RestSdmxClient {
     }
 
     public IMFEPM(final Boolean showInputDialog) throws Exception {
-        this(showInputDialog != null && showInputDialog
+        this(showInputDialog == null || showInputDialog
                 ? EntryPointAndAuth.inputDialog()
                 : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null));
     }
