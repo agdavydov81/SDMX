@@ -1,3 +1,5 @@
+tsList = getTimeSeries('IMFEPM', 'BOP6/BOP6.243.IARIMFFR_BP6_USD.W1.Q');
+
 %% Demo query variables
 providerName = 'IMFEPM-CUSTOM-003';
 preferredFlow = 'QUANTHUB,BOP6,1.2';
