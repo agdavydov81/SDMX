@@ -40,7 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import it.bancaditalia.oss.sdmx.api.GenericSDMXClient;
-import it.bancaditalia.oss.sdmx.client.custom.IMFEPM;
+import it.bancaditalia.oss.sdmx.client.custom.IMF_DATA;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxExceptionFactory;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxInvalidParameterException;
@@ -124,7 +124,7 @@ public class SDMXClientFactory {
 	    addBuiltInProvider("EUROSTAT_COMP", null, false, false, false, "Eurostat - DG COMP", true, SDMXClientFactory.SDMX_V2);
 	    addBuiltInProvider("EUROSTAT_EMPL", null, false, false, false, "Eurostat - DG EMPL", true, SDMXClientFactory.SDMX_V2);
 	    addBuiltInProvider("BBK", null, false, false, false, "Deutsche Bundesbank", true, SDMXClientFactory.SDMX_V2);
-		addBuiltInProvider(IMFEPM.class.getSimpleName(), null, false, false, true, "IMF EPAM iData Provider", true, SDMXClientFactory.SDMX_V2);
+		addBuiltInProvider(IMF_DATA.class.getSimpleName(), null, false, false, true, "IMF iData Provider", true, SDMXClientFactory.SDMX_V2);
 	}
 	
 	/**

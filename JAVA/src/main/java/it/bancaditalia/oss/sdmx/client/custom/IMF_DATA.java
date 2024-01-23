@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 
-public class IMFEPM extends RestSdmxClient {
+public class IMF_DATA extends RestSdmxClient {
     public static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
 
 
@@ -49,12 +49,12 @@ public class IMFEPM extends RestSdmxClient {
         }
 
         public static EntryPointAndAuth inputDialog() {
-            Preferences preferences = Preferences.userNodeForPackage(IMFEPM.class);
+            Preferences preferences = Preferences.userNodeForPackage(IMF_DATA.class);
 
-            JTextField entryPoint = new JTextField(preferences.get("entryPoint", PUBLIC_ENTRY_POINT));
-            JTextField clientId = new JTextField(preferences.get("clientId", ""));
-            JTextField authority = new JTextField(preferences.get("authority", ""));
-            JTextField scope = new JTextField(preferences.get("scope", ""));
+            JTextField entryPoint = new JTextField(preferences.get("entryPoint", PROTECTED_ENTRY_POINT));
+            JTextField clientId = new JTextField(preferences.get("clientId", PROTECTED_CLIENT_ID));
+            JTextField authority = new JTextField(preferences.get("authority", PROTECTED_AUTHORITY));
+            JTextField scope = new JTextField(preferences.get("scope", PROTECTED_SCOPE));
 
             JTextField password = new JTextField();
             Object[] message = {
@@ -66,26 +66,37 @@ public class IMFEPM extends RestSdmxClient {
 
             int option = JOptionPane.showConfirmDialog(null, message, "Provider configuration", JOptionPane.OK_CANCEL_OPTION);
             if (option == JOptionPane.OK_OPTION) {
-                preferences.put("entryPoint", entryPoint.getText());
-                preferences.put("clientId", clientId.getText());
-                preferences.put("authority", authority.getText());
-                preferences.put("scope", scope.getText());
+                final String curEntryPoint = entryPoint.getText().trim();
+                final String curClientId = clientId.getText().trim();
+                final String curAuthority = authority.getText().trim();
+                final String curScope = scope.getText().trim();
 
-                return new EntryPointAndAuth(entryPoint.getText(), clientId.getText(), authority.getText(), new String[]{scope.getText()});
+                preferences.put("entryPoint", curEntryPoint);
+                preferences.put("clientId", curClientId);
+                preferences.put("authority", curAuthority);
+                preferences.put("scope", curScope);
+
+                final String[] curScopeArray = !curScope.isEmpty() ? new String[]{curScope} : null;
+
+                return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority), curScopeArray);
             } else {
                 return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null);
             }
         }
+
+        private static String emptyToNull(final String str) {
+            return str.isEmpty() ? null : str;
+        }
     }
 
-    public IMFEPM() throws Exception {
+    public IMF_DATA() throws Exception {
         this(envShowInputDialog());
         // this(PUBLIC_ENTRY_POINT, null, null, null);
         // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
     }
 
     private static Boolean envShowInputDialog() {
-        final String varName = IMFEPM.class.getSimpleName() + "_SHOWINPUTDIALOG";
+        final String varName = IMF_DATA.class.getSimpleName() + "_SHOWINPUTDIALOG";
         final Boolean showInputDialog;
         {
             String propValue = System.getProperty(varName);
@@ -101,7 +112,7 @@ public class IMFEPM extends RestSdmxClient {
         return showInputDialog;
     }
 
-    public IMFEPM(final Boolean showInputDialog) throws Exception {
+    public IMF_DATA(final Boolean showInputDialog) throws Exception {
         this(showInputDialog == null || showInputDialog
                 ? EntryPointAndAuth.inputDialog()
                 : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null));
@@ -176,12 +187,12 @@ public class IMFEPM extends RestSdmxClient {
         return RestSdmxClient.authorizationBearer(iAuthenticationResult.accessToken());
     }
 
-    public IMFEPM(final EntryPointAndAuth entryPointAndAuth) throws Exception {
+    public IMF_DATA(final EntryPointAndAuth entryPointAndAuth) throws Exception {
         this(entryPointAndAuth.entryPoint, entryPointAndAuth.clientId, entryPointAndAuth.authority, entryPointAndAuth.scope);
     }
 
-    public IMFEPM(final String entryPoint, final String clientId, final String authority, final String[] scope) throws Exception {
-        super(IMFEPM.class.getSimpleName(), new URI(entryPoint), tokenToAuthorization(clientId, authority, scope), false, true);
+    public IMF_DATA(final String entryPoint, final String clientId, final String authority, final String[] scope) throws Exception {
+        super(IMF_DATA.class.getSimpleName(), new URI(entryPoint), tokenToAuthorization(clientId, authority, scope), false, true);
     }
 
 //    @Override
