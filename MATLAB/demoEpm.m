@@ -1,4 +1,4 @@
-%tsList = getTimeSeries('IMF_DATA', 'BALANCE_OF_PAYMENTS.ISS.M.N.5B............');
+tsList = getTimeSeries('IMF_DATA', 'BALANCE_OF_PAYMENTS.ISS.M.N.5B............');
 
 %% Demo query variables
 providerName = 'IMF-DATA-CUSTOM-003';
@@ -30,7 +30,7 @@ if ~strcmp(provides, providerName)
     constructorArguments = javaArray('java.lang.Object', 1);
     constructorArguments(1) = javaObject('java.lang.Boolean', true);
 %}
-    addProvider(providerName, ['Description of the ' providerName], 'it.bancaditalia.oss.sdmx.client.custom.IMFEPM', constructorArguments);
+    addProvider(providerName, ['Description of the ' providerName], 'it.bancaditalia.oss.sdmx.client.custom.IMF_DATA', constructorArguments);
 end
 
 
