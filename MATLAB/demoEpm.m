@@ -1,7 +1,7 @@
-tsList = getTimeSeries('IMFEPM', 'BOP6/BOP6.243.IARIMFFR_BP6_USD.W1.Q');
+%tsList = getTimeSeries('IMF_DATA', 'BALANCE_OF_PAYMENTS.ISS.M.N.5B............');
 
 %% Demo query variables
-providerName = 'IMFEPM-CUSTOM-003';
+providerName = 'IMF-DATA-CUSTOM-003';
 preferredFlow = 'QUANTHUB,BOP6,1.2';
 preferredDimension = {'REF_AREA', '111';
                       'FREQ', 'Q'};
@@ -18,7 +18,7 @@ if ~strcmp(provides, providerName)
     disp(['Register new provider ' providerName]);
 
     % final String entryPoint, final String clientId, final String authority, final String[] scope
-
+%{
     constructorArguments = javaArray('java.lang.Object', 4);
     constructorArguments(1) = javaObject('java.lang.String', 'https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1');
     constructorArguments(2) = javaObject('java.lang.String', 'bf03b113-5aa3-4585-a7d4-4b98160ec4ff');
@@ -26,7 +26,7 @@ if ~strcmp(provides, providerName)
     scope = javaArray('java.lang.String', 1);
     scope(1) = javaObject('java.lang.String', 'api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login');
     constructorArguments(4) = scope;
-%{
+%}
     constructorArguments = javaArray('java.lang.Object', 1);
     constructorArguments(1) = javaObject('java.lang.Boolean', true);
 %}
