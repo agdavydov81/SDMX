@@ -67,6 +67,7 @@ public class NewProviderDialog extends JDialog {
 	private String description = null;
 	private String URL = null;
 	private SdmxVersion sdmxVersion;
+	private String className;
 
 	public NewProviderDialog()
 	{
@@ -74,7 +75,7 @@ public class NewProviderDialog extends JDialog {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setTitle("Add new SDMX 2.1 compliant provider");
-		setBounds(100, 100, 395, 214);
+		setBounds(100, 100, 395, 254);
 		final Container mainPane = getContentPane();
 		mainPane.setLayout(new BorderLayout());
 
@@ -85,7 +86,7 @@ public class NewProviderDialog extends JDialog {
 		final GridBagLayout gbl_contentPanel = new GridBagLayout();
 		gbl_contentPanel.columnWidths = new int[] {80, 0};
 		gbl_contentPanel.columnWeights = new double[] {0, 1.0};
-		gbl_contentPanel.rowWeights = new double[]{1, 1, 1, 1};
+		gbl_contentPanel.rowWeights = new double[]{1, 1, 1, 1, 1};
 		contentPanel.setLayout(gbl_contentPanel);
 		
 		final JLabel lblName = new JLabel("Provider name:");
@@ -164,6 +165,25 @@ public class NewProviderDialog extends JDialog {
 		gbc_cmbVersion.gridy = 3;
 		contentPanel.add(cmbVersion, gbc_cmbVersion);
 
+		final JLabel lblClass = new JLabel("Class name (opt):");
+		lblClass.setDisplayedMnemonic(KeyEvent.VK_O);
+		lblClass.setHorizontalAlignment(TRAILING);
+		GridBagConstraints gbc_lblClass = new GridBagConstraints();
+		gbc_lblClass.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblClass.insets = new Insets(5, 5, 5, 5);
+		gbc_lblClass.gridx = 0;
+		gbc_lblClass.gridy = 4;
+		contentPanel.add(lblClass, gbc_lblClass);
+
+		final JTextField txtClass = new JTextField();
+		lblClass.setLabelFor(txtClass);
+		GridBagConstraints gbc_txtClass = new GridBagConstraints();
+		gbc_txtClass.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtClass.insets = new Insets(5, 5, 5, 5);
+		gbc_txtClass.gridx = 1;
+		gbc_txtClass.gridy = 4;
+		contentPanel.add(txtClass, gbc_txtClass);
+
 		JPanel buttonPane = new JPanel();
 		buttonPane.setPreferredSize(new Dimension(10, 35));
 		buttonPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -191,6 +211,7 @@ public class NewProviderDialog extends JDialog {
 				description = txtDescription.getText();
 				URL = txtURL.getText();
 				sdmxVersion = (SdmxVersion) cmbVersion.getSelectedItem();
+				className = txtClass.getText();
 				result = JOptionPane.OK_OPTION;
 				dispose();
 			});
@@ -224,5 +245,9 @@ public class NewProviderDialog extends JDialog {
 	}
 	public String getSdmxVersion() {
 		return sdmxVersion.getVal();
+	}
+
+	public String getClassName() {
+		return className;
 	}
 }

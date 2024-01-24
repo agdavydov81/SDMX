@@ -118,6 +118,12 @@ public class IMF_DATA extends RestSdmxClient {
                 : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null));
     }
 
+    public IMF_DATA(final String entryPoint) throws Exception {
+        this(entryPoint == null || entryPoint.isEmpty()
+                ? EntryPointAndAuth.inputDialog()
+                : new EntryPointAndAuth(entryPoint, null, null, null));
+    }
+
     private static IAuthenticationResult acquireTokenInteractive(final String clientId,
                                                                  final String authority,
                                                                  final String[] scopeArray) throws Exception {

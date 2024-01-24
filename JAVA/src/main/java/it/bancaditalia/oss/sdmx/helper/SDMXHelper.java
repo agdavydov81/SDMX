@@ -317,8 +317,12 @@ public class SDMXHelper extends JFrame
 							String name = newProviderDialog.getName();
 							String description = newProviderDialog.getDescription();
 							String sdmxVersion = newProviderDialog.getSdmxVersion();
-							URI endpoint = new URI(newProviderDialog.getURL());
-							SDMXClientFactory.addProvider(name, endpoint, false, false, true, description, false, sdmxVersion);
+							String endpoint = newProviderDialog.getURL();
+							String className = newProviderDialog.getClassName();
+							if (className == null || className.trim().isEmpty())
+								SDMXClientFactory.addProvider(name, new URI(endpoint), false, false, true, description, false, sdmxVersion);
+							else
+								SDMXClientFactory.addProvider(name, description, className.trim(), new Object[] {endpoint});
 							mnProviders.removeAll();
 							providersSetup(mnProviders);
 						} 
