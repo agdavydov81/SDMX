@@ -18,50 +18,69 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IMF_DATA extends RestSdmxClient {
     public static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
 
 
-    public static final String PROTECTED_ENTRY_POINT = "https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1";
+    public static final  String PROTECTED_ENTRY_POINT = "https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1";
 
-    public final static String PROTECTED_CLIENT_ID = "bf03b113-5aa3-4585-a7d4-4b98160ec4ff";
-    public final static String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
-    public final static String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
+    public static final String PROTECTED_CLIENT_ID = "bf03b113-5aa3-4585-a7d4-4b98160ec4ff";
+    public static final String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
+    public static final String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
+
+    public static final String ENTRY_POINT_VAR = "entryPoint";
+    public static final String CLIENT_ID_VAR = "clientId";
+    public static final String AUTHORITY_VAR = "authority";
+    public static final String SCOPE_VAR = "scope";
+    public static final String OPTIONAL_HEADERS_VAR = "optionalHeaders";
 
     public static class EntryPointAndAuth {
         final String entryPoint;
         final String clientId;
         final String authority;
         final String[] scope;
+        final String[][] optionalHeaders;
 
         public EntryPointAndAuth(final String entryPoint, final String clientId,
-                                 final String authority, final String[] scope) {
+                                 final String authority, final String[] scope,
+                                 final String[][] optionalHeaders) {
             this.entryPoint = entryPoint;
             this.clientId = clientId;
             this.authority = authority;
             this.scope = scope;
+            this.optionalHeaders = optionalHeaders;
         }
 
+        // From https://developers.cloudflare.com/rules/transform/request-header-modification/reference/header-format/
+        public static final Pattern optionalHeaderPattern = Pattern.compile("\\s*([a-zA-Z0-9_\\-]+?):\\s*([a-zA-Z0-9_ :;.,\\\\/\"'?!(){}\\[\\]@<>=\\-+*#$&`|~^%]+)\\s*");
+
         public static EntryPointAndAuth inputDialog() {
-            Preferences preferences = Preferences.userNodeForPackage(IMF_DATA.class);
+            final Preferences preferences = Preferences.userNodeForPackage(IMF_DATA.class);
 
-            JTextField entryPoint = new JTextField(preferences.get("entryPoint", PROTECTED_ENTRY_POINT));
-            JTextField clientId = new JTextField(preferences.get("clientId", PROTECTED_CLIENT_ID));
-            JTextField authority = new JTextField(preferences.get("authority", PROTECTED_AUTHORITY));
-            JTextField scope = new JTextField(preferences.get("scope", PROTECTED_SCOPE));
+            final JTextField entryPoint = new JTextField(preferences.get(ENTRY_POINT_VAR, PROTECTED_ENTRY_POINT));
+            final JTextField clientId = new JTextField(preferences.get(CLIENT_ID_VAR, PROTECTED_CLIENT_ID));
+            final JTextField authority = new JTextField(preferences.get(AUTHORITY_VAR, PROTECTED_AUTHORITY));
 
-            JTextField password = new JTextField();
+            final JTextArea scope = new JTextArea(ensureNewLines(preferences.get(SCOPE_VAR, PROTECTED_SCOPE), 2));
+            scope.setFont(authority.getFont());
+            final JScrollPane scopeScroll = new JScrollPane(scope);
+
+            final JTextArea optionalHeaders = new JTextArea(ensureNewLines(preferences.get(OPTIONAL_HEADERS_VAR, ""), 2));
+            optionalHeaders.setFont(authority.getFont());
+            final JScrollPane optionalHeadersScroll = new JScrollPane(optionalHeaders);
+
             Object[] message = {
                     "Entry point:", entryPoint,
                     "Client ID:", clientId,
                     "Authority:", authority,
-                    "Scope:", scope
+                    "Scope (one per line):", scopeScroll,
+                    "Optional request headers (one per line in format   HeaderName: HeaderValue ):", optionalHeadersScroll
             };
 
             int option = JOptionPane.showConfirmDialog(null, message, "Provider configuration", JOptionPane.OK_CANCEL_OPTION);
@@ -69,24 +88,60 @@ public class IMF_DATA extends RestSdmxClient {
                 final String curEntryPoint = entryPoint.getText().trim();
                 final String curClientId = clientId.getText().trim();
                 final String curAuthority = authority.getText().trim();
-                final String curScope = scope.getText().trim();
+                final String curScope = scope.getText();
+                final String curOptionalHeaders = optionalHeaders.getText();
 
-                preferences.put("entryPoint", curEntryPoint);
-                preferences.put("clientId", curClientId);
-                preferences.put("authority", curAuthority);
-                preferences.put("scope", curScope);
+                preferences.put(ENTRY_POINT_VAR, curEntryPoint);
+                preferences.put(CLIENT_ID_VAR, curClientId);
+                preferences.put(AUTHORITY_VAR, curAuthority);
+                preferences.put(SCOPE_VAR, curScope);
+                preferences.put(OPTIONAL_HEADERS_VAR, curOptionalHeaders);
 
-                final String[] curScopeArray = !curScope.isEmpty() ? new String[]{curScope} : null;
+                final String[] curScopeArray = Arrays.stream(curScope.split("[\r\n]"))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .toArray(String[]::new);
 
-                return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority), curScopeArray);
+                final String[][] curOptionalHeadersArray = Arrays.stream(curOptionalHeaders.split("[\r\n]"))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .map(str -> {
+                            final Matcher matcher = optionalHeaderPattern.matcher(str);
+                            if (!matcher.matches())
+                                throw new RuntimeException("The optional header \"" + str + "\" does not matches acceptable pattern.");
+                            final String g1 = matcher.group(1);
+                            final String g2 = matcher.group(2);
+                            return new String[]{g1, g2};
+                        })
+                        .toArray(String[][]::new);
+
+                return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority), curScopeArray, curOptionalHeadersArray);
             } else {
-                return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null);
+                return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null, null);
             }
         }
 
         private static String emptyToNull(final String str) {
             return str.isEmpty() ? null : str;
         }
+    }
+
+    private static String ensureNewLines(String str, int newLinesMinCount) {
+        final String newLine = System.lineSeparator();
+        int newLinesCount = 0;
+        int i = 0;
+        while ((i = str.indexOf(newLine, i) + 1) > 0) {
+            newLinesCount++;
+        }
+        if (newLinesCount < newLinesMinCount) {
+            StringBuilder sb = new StringBuilder(str);
+            for (; newLinesCount < newLinesMinCount; ++newLinesCount) {
+                sb.append(newLine);
+            }
+            str = sb.toString();
+        }
+
+        return str;
     }
 
     public IMF_DATA() throws Exception {
@@ -115,13 +170,13 @@ public class IMF_DATA extends RestSdmxClient {
     public IMF_DATA(final Boolean showInputDialog) throws Exception {
         this(showInputDialog == null || showInputDialog
                 ? EntryPointAndAuth.inputDialog()
-                : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null));
+                : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null, null));
     }
 
     public IMF_DATA(final String entryPoint) throws Exception {
         this(entryPoint == null || entryPoint.isEmpty()
                 ? EntryPointAndAuth.inputDialog()
-                : new EntryPointAndAuth(entryPoint, null, null, null));
+                : new EntryPointAndAuth(entryPoint, null, null, null, null));
     }
 
     private static IAuthenticationResult acquireTokenInteractive(final String clientId,
@@ -185,7 +240,7 @@ public class IMF_DATA extends RestSdmxClient {
                                                final String authority,
                                                final String[] scopeArray) throws Exception {
 
-        if (clientId == null && authority == null && scopeArray == null)
+        if (clientId == null && authority == null && (scopeArray == null || scopeArray.length == 0))
             return null;
 
         IAuthenticationResult iAuthenticationResult = acquireTokenInteractive(clientId, authority, scopeArray);
@@ -193,11 +248,11 @@ public class IMF_DATA extends RestSdmxClient {
         return RestSdmxClient.authorizationBearer(iAuthenticationResult.accessToken());
     }
 
-    public IMF_DATA(final EntryPointAndAuth entryPointAndAuth) throws Exception {
-        this(entryPointAndAuth.entryPoint, entryPointAndAuth.clientId, entryPointAndAuth.authority, entryPointAndAuth.scope);
+    public IMF_DATA(final EntryPointAndAuth args) throws Exception {
+        this(args.entryPoint, args.clientId, args.authority, args.scope, args.optionalHeaders);
     }
 
-    public IMF_DATA(final String entryPoint, final String clientId, final String authority, final String[] scope) throws Exception {
+    public IMF_DATA(final String entryPoint, final String clientId, final String authority, final String[] scope, final String[][] optionalHeaders) throws Exception {
         super(IMF_DATA.class.getSimpleName(), new URI(entryPoint), tokenToAuthorization(clientId, authority, scope), false, true);
     }
 

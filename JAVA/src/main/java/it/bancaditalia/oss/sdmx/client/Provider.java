@@ -67,9 +67,10 @@ public class Provider {
 	private String fullClassName;
 	private Object[] constructorArguments;
 
-	public Provider(final String name, final String description, final String fullClassName, final Object[] constructorArguments) {
+	public Provider(final String name, final String description, final String sdmxVersion, final String fullClassName, final Object[] constructorArguments) {
 		this.name = name;
 		this.description = description;
+		this.sdmxVersion = sdmxVersion;
 		this.fullClassName = fullClassName;
 		this.constructorArguments = constructorArguments;
 	}

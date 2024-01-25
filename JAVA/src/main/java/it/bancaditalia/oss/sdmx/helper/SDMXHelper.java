@@ -322,7 +322,7 @@ public class SDMXHelper extends JFrame
 							if (className == null || className.trim().isEmpty())
 								SDMXClientFactory.addProvider(name, new URI(endpoint), false, false, true, description, false, sdmxVersion);
 							else
-								SDMXClientFactory.addProvider(name, description, className.trim(), new Object[] {endpoint});
+								SDMXClientFactory.addProvider(name, description, sdmxVersion, className.trim(), new Object[] {endpoint});
 							mnProviders.removeAll();
 							providersSetup(mnProviders);
 						} 

@@ -1,5 +1,7 @@
 package it.bancaditalia.oss.sdmx.helper;
 
+import it.bancaditalia.oss.sdmx.client.custom.IMF_DATA;
+
 import static it.bancaditalia.oss.sdmx.client.SDMXClientFactory.SDMX_V2;
 import static it.bancaditalia.oss.sdmx.client.SDMXClientFactory.SDMX_V3;
 import static java.awt.Dialog.ModalityType.APPLICATION_MODAL;
@@ -16,6 +18,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -69,8 +73,16 @@ public class NewProviderDialog extends JDialog {
 	private SdmxVersion sdmxVersion;
 	private String className;
 
+    public static final String PROVIDER_NAME_VAR = "providerName";
+    public static final String PROVIDER_DESCRIPTION_VAR = "providerDescription";
+    public static final String PROVIDER_URL_VAR = "providerUrl";
+    public static final String PROVIDER_SDMX_VERSION_VAR = "providerSdmxVersion";
+    public static final String PROVIDER_CLASS_NAME_VAR = "providerClassName";
+
 	public NewProviderDialog()
 	{
+		final Preferences preferences = Preferences.userNodeForPackage(NewProviderDialog.class);
+
 		setModalityType(APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
@@ -99,7 +111,7 @@ public class NewProviderDialog extends JDialog {
 		gbc_lblName.gridy = 0;
 		contentPanel.add(lblName, gbc_lblName);
 		
-		final JTextField txtName = new JTextField();
+		final JTextField txtName = new JTextField(preferences.get(PROVIDER_NAME_VAR, ""));
 		lblName.setLabelFor(txtName);
 		GridBagConstraints gbc_txtName = new GridBagConstraints();
 		gbc_txtName.fill = HORIZONTAL;
@@ -118,7 +130,7 @@ public class NewProviderDialog extends JDialog {
 		gbc_lblDescription.gridy = 1;
 		contentPanel.add(lblDescription, gbc_lblDescription);
 		
-		final JTextField txtDescription = new JTextField();
+		final JTextField txtDescription = new JTextField(preferences.get(PROVIDER_DESCRIPTION_VAR, ""));
 		lblDescription.setLabelFor(txtDescription);
 		GridBagConstraints gbc_txtDescription = new GridBagConstraints();
 		gbc_txtDescription.fill = HORIZONTAL;
@@ -137,7 +149,7 @@ public class NewProviderDialog extends JDialog {
 		gbc_lblURL.gridy = 2;
 		contentPanel.add(lblURL, gbc_lblURL);
 
-		final JTextField txtURL = new JTextField();
+		final JTextField txtURL = new JTextField(preferences.get(PROVIDER_URL_VAR, ""));
 		lblURL.setLabelFor(txtURL);
 		GridBagConstraints gbc_txtURL = new GridBagConstraints();
 		gbc_txtURL.fill = GridBagConstraints.HORIZONTAL;
@@ -157,6 +169,18 @@ public class NewProviderDialog extends JDialog {
 		
 		final JComboBox<SdmxVersion> cmbVersion = new JComboBox<>();
 		cmbVersion.setModel(new DefaultComboBoxModel<>(SdmxVersion.values()));
+		{
+			final String prefValue = preferences.get(PROVIDER_SDMX_VERSION_VAR, "").trim();
+			if (!prefValue.isEmpty()) {
+				final SdmxVersion[] sdmxVersionValues = SdmxVersion.values();
+				for (int i = 0; i < sdmxVersionValues.length; ++i) {
+					if (sdmxVersionValues[i].getVal().equals(prefValue)) {
+						cmbVersion.setSelectedIndex(i);
+						break;
+					}
+				}
+			}
+		}
 		lblURL.setLabelFor(cmbVersion);
 		GridBagConstraints gbc_cmbVersion = new GridBagConstraints();
 		gbc_cmbVersion.fill = GridBagConstraints.HORIZONTAL;
@@ -175,7 +199,7 @@ public class NewProviderDialog extends JDialog {
 		gbc_lblClass.gridy = 4;
 		contentPanel.add(lblClass, gbc_lblClass);
 
-		final JTextField txtClass = new JTextField();
+		final JTextField txtClass = new JTextField(preferences.get(PROVIDER_CLASS_NAME_VAR, ""));
 		lblClass.setLabelFor(txtClass);
 		GridBagConstraints gbc_txtClass = new GridBagConstraints();
 		gbc_txtClass.fill = GridBagConstraints.HORIZONTAL;
@@ -212,6 +236,13 @@ public class NewProviderDialog extends JDialog {
 				URL = txtURL.getText();
 				sdmxVersion = (SdmxVersion) cmbVersion.getSelectedItem();
 				className = txtClass.getText();
+
+				preferences.put(PROVIDER_NAME_VAR, name);
+				preferences.put(PROVIDER_DESCRIPTION_VAR, description);
+				preferences.put(PROVIDER_URL_VAR, URL);
+				preferences.put(PROVIDER_SDMX_VERSION_VAR, sdmxVersion.getVal());
+				preferences.put(PROVIDER_CLASS_NAME_VAR, className);
+
 				result = JOptionPane.OK_OPTION;
 				dispose();
 			});

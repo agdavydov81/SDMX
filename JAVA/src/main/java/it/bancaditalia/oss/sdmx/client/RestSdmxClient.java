@@ -90,6 +90,7 @@ public class RestSdmxClient implements GenericSDMXClient {
     protected String name;
     protected final boolean needsURLEncoding;
     protected final boolean supportsCompression;
+    protected final String[][] optionalHeaders;
 
     protected ProxySelector proxySelector;
     protected SSLSocketFactory sslSocketFactory;
@@ -120,15 +121,16 @@ public class RestSdmxClient implements GenericSDMXClient {
     public static final String CHILDREN = DESCENDANTS; // "children";
 
     public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, boolean needsCredentials, boolean needsURLEncoding, boolean supportsCompression) {
-        this(name, endpoint, sslSocketFactory, needsCredentials ? BASIC : null,  needsURLEncoding, supportsCompression);
+        this(name, endpoint, sslSocketFactory, needsCredentials ? BASIC : null,  needsURLEncoding, supportsCompression, null);
     }
 
-    public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, String authorization, boolean needsURLEncoding, boolean supportsCompression) {
+    public RestSdmxClient(String name, URI endpoint, SSLSocketFactory sslSocketFactory, String authorization, boolean needsURLEncoding, boolean supportsCompression, final String[][] optionalHeaders) {
         this.endpoint = endpoint;
         this.name = name;
         this.authorization = authorization;
         this.needsURLEncoding = needsURLEncoding;
         this.supportsCompression = supportsCompression;
+        this.optionalHeaders = optionalHeaders;
         this.proxySelector = null;
         this.sslSocketFactory = sslSocketFactory;
         this.hostnameVerifier = null;
@@ -138,12 +140,15 @@ public class RestSdmxClient implements GenericSDMXClient {
     }
 
     public RestSdmxClient(String name, URI endpoint, boolean needsCredentials, boolean needsURLEncoding, boolean supportsCompression) {
-        this(name, endpoint, null, needsCredentials ? BASIC : null, needsURLEncoding, supportsCompression);
+        this(name, endpoint, null, needsCredentials ? BASIC : null, needsURLEncoding, supportsCompression, null);
     }
 
-
     public RestSdmxClient(String name, URI endpoint, String authorization, boolean needsURLEncoding, boolean supportsCompression) {
-        this(name, endpoint, null, authorization, needsURLEncoding, supportsCompression);
+        this(name, endpoint, authorization, needsURLEncoding, supportsCompression, null);
+    }
+
+    public RestSdmxClient(String name, URI endpoint, String authorization, boolean needsURLEncoding, boolean supportsCompression, final String[][] optionalHeaders) {
+        this(name, endpoint, null, authorization, needsURLEncoding, supportsCompression, optionalHeaders);
     }
 
     public void setProxySelector(ProxySelector proxySelector) {
@@ -504,6 +509,16 @@ public class RestSdmxClient implements GenericSDMXClient {
             conn.setRequestProperty(ACCEPT, acceptHeader);
         else
             conn.setRequestProperty(ACCEPT, "*/*");
+        if (optionalHeaders != null) {
+            for (int i = 0; i < optionalHeaders.length; ++i) {
+                final String[] optHeader = optionalHeaders[i];
+                if (optHeader == null || optHeader.length == 0)
+                    continue;
+                if (optHeader.length != 2)
+                    throw new RuntimeException("The optional header[" + i + "].length(=" + optHeader.length + ") != 2.");
+                conn.setRequestProperty(optHeader[0], optHeader[1]);
+            }
+        }
     }
 
     protected URL buildDataQuery(Dataflow dataflow, String resource, String startTime, String endTime, boolean serieskeysonly, String updatedAfter, boolean includeHistory) throws SdmxException {

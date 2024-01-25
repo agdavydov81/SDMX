@@ -228,6 +228,7 @@ public class SDMXClientFactory {
 
 	public static void addProvider(String name,
 								   String description,
+								   String sdmxVersion,
 								   String classFullName,
 								   Object[] constructorArguments) throws SdmxInvalidParameterException {
 		if (name == null || name.trim().isEmpty()) {
@@ -235,7 +236,7 @@ public class SDMXClientFactory {
 			throw new SdmxInvalidParameterException("The name of the provider cannot be null");
 		}
 
-		providers.put(name, new Provider(name, description, classFullName, constructorArguments));
+		providers.put(name, new Provider(name, description, sdmxVersion, classFullName, constructorArguments));
 	}
 
 	/**

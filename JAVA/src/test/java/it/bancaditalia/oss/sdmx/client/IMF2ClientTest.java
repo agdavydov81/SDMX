@@ -27,7 +27,7 @@ public class IMF2ClientTest {
         final String provider = "IMF-DATA-TEST-CLIENT-" + Math.abs(new SecureRandom().nextInt());
 
         // https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1/data/QUANTHUB%2CBOP6%2C1.2/.136...?detail=serieskeysonly
-        SdmxClientHandler.addProvider(provider, "Test provider description",
+        SdmxClientHandler.addProvider(provider, "Test provider description", SDMXClientFactory.SDMX_V2,
                 IMF_DATA.class.getName(),
                 new Object[]{IMF_DATA.PROTECTED_ENTRY_POINT,
                         IMF_DATA.PROTECTED_CLIENT_ID,

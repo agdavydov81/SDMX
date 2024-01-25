@@ -23,6 +23,7 @@ public class IMFDataClientTest {
     public static void main(String[] args) throws SdmxException {
         it.bancaditalia.oss.sdmx.client.SdmxClientHandler.addProvider(providerName,
                 "Description of the IMF-DATA-REFLECTION",
+                SDMXClientFactory.SDMX_V2,
                 IMF_DATA.class.getName(),
                 new java.lang.Object[] {
                         Boolean.TRUE
