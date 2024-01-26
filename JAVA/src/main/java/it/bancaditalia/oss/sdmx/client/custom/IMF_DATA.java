@@ -129,10 +129,13 @@ public class IMF_DATA extends RestSdmxClient {
     private static String ensureNewLines(String str, int newLinesMinCount) {
         final String newLine = System.lineSeparator();
         int newLinesCount = 0;
-        int i = 0;
-        while ((i = str.indexOf(newLine, i) + 1) > 0) {
-            newLinesCount++;
+        for (int i = 0; i < str.length(); ++i) {
+            final char c = str.charAt(i);
+            if (c == '\n') {
+                newLinesCount++;
+            }
         }
+
         if (newLinesCount < newLinesMinCount) {
             StringBuilder sb = new StringBuilder(str);
             for (; newLinesCount < newLinesMinCount; ++newLinesCount) {
@@ -253,7 +256,7 @@ public class IMF_DATA extends RestSdmxClient {
     }
 
     public IMF_DATA(final String entryPoint, final String clientId, final String authority, final String[] scope, final String[][] optionalHeaders) throws Exception {
-        super(IMF_DATA.class.getSimpleName(), new URI(entryPoint), tokenToAuthorization(clientId, authority, scope), false, true);
+        super(IMF_DATA.class.getSimpleName(), new URI(entryPoint), tokenToAuthorization(clientId, authority, scope), false, true, optionalHeaders);
     }
 
 //    @Override
