@@ -102,20 +102,23 @@ public class IMF_DATA extends RestSdmxClient {
                         .filter(s -> !s.isEmpty())
                         .toArray(String[]::new);
 
-                final String[][] curOptionalHeadersArray = Arrays.stream(curOptionalHeaders.split("[\r\n]"))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .map(str -> {
-                            final Matcher matcher = optionalHeaderPattern.matcher(str);
-                            if (!matcher.matches())
-                                throw new RuntimeException("The optional header \"" + str + "\" does not matches acceptable pattern.");
-                            final String g1 = matcher.group(1);
-                            final String g2 = matcher.group(2);
-                            return new String[]{g1, g2};
-                        })
-                        .toArray(String[][]::new);
+                final List<String[]> curOptionalHeadersProcessed = new ArrayList<>();
+                final String[] curOptionalHeadersParts = curOptionalHeaders.split("[\r\n]");
+                for (int pi = 0; pi < curOptionalHeadersParts.length; ++pi) {
+                    final String str = curOptionalHeadersParts[pi].trim();
+                    if (str.isEmpty())
+                        continue;
 
-                return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority), curScopeArray, curOptionalHeadersArray);
+                    final Matcher matcher = optionalHeaderPattern.matcher(str);
+                    if (!matcher.matches())
+                        throw new RuntimeException("The optional header[" + pi + "](=" + str + ") does not matches acceptable pattern.");
+                    final String g1 = matcher.group(1);
+                    final String g2 = matcher.group(2);
+                    curOptionalHeadersProcessed.add(new String[]{g1, g2});
+                }
+
+                return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority),
+                        curScopeArray, curOptionalHeadersProcessed.toArray(new String[][]{}));
             } else {
                 return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null, null);
             }
@@ -182,6 +185,40 @@ public class IMF_DATA extends RestSdmxClient {
                 : new EntryPointAndAuth(entryPoint, null, null, null, null));
     }
 
+    private static String enforceTrailingSlash(String authority) {
+        authority = authority.toLowerCase();
+        if (!authority.endsWith("/")) {
+            authority = authority + "/";
+        }
+
+        return authority;
+    }
+
+    private static boolean isB2CAuthority(String host, String firstPath) {
+        return host.contains("b2clogin.com") || firstPath.compareToIgnoreCase("tfp") == 0;
+    }
+
+    private static boolean stringIsBlank(final String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    private static boolean msalIsB2C(String authority) throws MalformedURLException {
+        if (authority == null)
+            return false;
+
+        authority = enforceTrailingSlash(authority);
+        final URL authorityUrl = new URL(authority);
+
+        String path = authorityUrl.getPath().substring(1);
+        if (stringIsBlank(path))
+            return false;
+
+        String host = authorityUrl.getHost();
+        String firstPath = path.substring(0, path.indexOf("/"));
+
+        return isB2CAuthority(host, firstPath);
+    }
+
     private static IAuthenticationResult acquireTokenInteractive(final String clientId,
                                                                  final String authority,
                                                                  final String[] scopeArray) throws Exception {
@@ -199,8 +236,14 @@ public class IMF_DATA extends RestSdmxClient {
 //        // dummy data, so the acquireTokenSilently call will fail.
 //        TokenCacheAspect tokenCacheAspect = new TokenCacheAspect("sample_cache.json");
 //
-        PublicClientApplication pca = PublicClientApplication.builder(clientId)
-                .authority(authority)
+        PublicClientApplication.Builder builder = PublicClientApplication.builder(clientId);
+        if (msalIsB2C(authority)) {
+            builder = builder.b2cAuthority(authority);
+        } else {
+            builder = builder.authority(authority);
+        }
+
+        PublicClientApplication pca = builder
 //                .setTokenCacheAccessAspect(tokenCacheAspect)
                 .build();
 
