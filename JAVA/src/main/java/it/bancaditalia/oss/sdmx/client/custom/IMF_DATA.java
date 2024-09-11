@@ -60,10 +60,11 @@ public class IMF_DATA extends RestSdmxClient {
         // From https://developers.cloudflare.com/rules/transform/request-header-modification/reference/header-format/
         public static final Pattern optionalHeaderPattern = Pattern.compile("\\s*([a-zA-Z0-9_\\-]+?):\\s*([a-zA-Z0-9_ :;.,\\\\/\"'?!(){}\\[\\]@<>=\\-+*#$&`|~^%]+)\\s*");
 
-        public static EntryPointAndAuth inputDialog() {
+        public static EntryPointAndAuth inputDialog(final String argEntryPoint) {
             final Preferences preferences = Preferences.userNodeForPackage(IMF_DATA.class);
 
-            final JTextField entryPoint = new JTextField(preferences.get(ENTRY_POINT_VAR, PROTECTED_ENTRY_POINT));
+            final JTextField entryPoint = new JTextField(argEntryPoint != null && !argEntryPoint.trim().isEmpty()
+                    ? argEntryPoint.trim() : preferences.get(ENTRY_POINT_VAR, PROTECTED_ENTRY_POINT));
             final JTextField clientId = new JTextField(preferences.get(CLIENT_ID_VAR, PROTECTED_CLIENT_ID));
             final JTextField authority = new JTextField(preferences.get(AUTHORITY_VAR, PROTECTED_AUTHORITY));
 
@@ -151,38 +152,19 @@ public class IMF_DATA extends RestSdmxClient {
     }
 
     public IMF_DATA() throws Exception {
-        this(envShowInputDialog());
+        this(false);
         // this(PUBLIC_ENTRY_POINT, null, null, null);
         // this(PROTECTED_ENTRY_POINT, PROTECTED_CLIENT_ID, PROTECTED_AUTHORITY, new String[]{PROTECTED_SCOPE});
     }
 
-    private static Boolean envShowInputDialog() {
-        final String varName = IMF_DATA.class.getSimpleName() + "_SHOWINPUTDIALOG";
-        final Boolean showInputDialog;
-        {
-            String propValue = System.getProperty(varName);
-            propValue = propValue != null ? propValue.trim() : "";
-            if (!propValue.isEmpty()) {
-                showInputDialog = Boolean.parseBoolean(propValue);
-            } else {
-                final String envValue = System.getenv(varName);
-                showInputDialog = envValue != null ? Boolean.parseBoolean(envValue) : null;
-            }
-        }
-
-        return showInputDialog;
-    }
-
     public IMF_DATA(final Boolean showInputDialog) throws Exception {
         this(showInputDialog == null || showInputDialog
-                ? EntryPointAndAuth.inputDialog()
+                ? EntryPointAndAuth.inputDialog(null)
                 : new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null, null));
     }
 
     public IMF_DATA(final String entryPoint) throws Exception {
-        this(entryPoint == null || entryPoint.isEmpty()
-                ? EntryPointAndAuth.inputDialog()
-                : new EntryPointAndAuth(entryPoint, null, null, null, null));
+        this(EntryPointAndAuth.inputDialog(entryPoint));
     }
 
     private static String enforceTrailingSlash(String authority) {
