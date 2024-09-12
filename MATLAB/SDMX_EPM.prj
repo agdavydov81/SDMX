@@ -9,7 +9,7 @@
 
 Description: This is a fork of the https://github.com/amattioc/SDMX with some fixes and new build-in provider.</param.description>
     <param.screenshot>${PROJECT_ROOT}\SDMX_EPM-256.png</param.screenshot>
-    <param.version>1.7</param.version>
+    <param.version>1.8</param.version>
     <param.output>${PROJECT_ROOT}\SDMX_EPM.mltbx</param.output>
     <param.products.name />
     <param.products.id />
