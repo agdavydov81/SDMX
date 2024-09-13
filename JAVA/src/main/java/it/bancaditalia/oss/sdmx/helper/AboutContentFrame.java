@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,42 +65,36 @@ public class AboutContentFrame extends JDialog
 	public AboutContentFrame()
 	{
 		String buildID = "NOT FOUND";
-		URL manifestURL = AboutContentFrame.class.getResource("/META-INF/MANIFEST.MF");
-		if (manifestURL != null)
-			try (InputStream e = manifestURL.openStream())
-			{
-				Manifest manifest = new Manifest(manifestURL.openStream());
-				String build = manifest.getMainAttributes().getValue("BUILD");
-				if (build != null && !build.isEmpty())
-					buildID = build;
+		String revisionID = "NOT FOUND";
+		try (final InputStream manifestStream = AboutContentFrame.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+			Attributes attributes = new Manifest(manifestStream).getMainAttributes();
+			String build = attributes.getValue("BUILD");
+			if (build != null && !build.trim().isEmpty())
+				buildID = build;
+			String revision = attributes.getValue("Revision");
+			if (revision != null && !revision.trim().isEmpty()) {
+				revisionID = revision;
 			}
-			catch (IOException e)
-			{
-				logger.severe("Exception. Class: " + e.getClass().getName() + " .Message: " + e.getMessage());
-				logger.log(Level.FINER, "", e);
-			}
+		}
+		catch (IOException e) {
+			logger.severe("Exception. Class: " + e.getClass().getName() + " .Message: " + e.getMessage());
+			logger.log(Level.FINER, "", e);
+		}
 
 		StringBuffer buf = new StringBuffer();
 		buf.append("<div style='font-family: sans-serif;'>");
 		buf.append("<h1 style='text-align:center; font-weight: bold'>SDMX Connectors Project</h1>");
 		buf.append("<h2 style='text-align:center'>Project information and code available on GitHub:</h2>");
-		buf.append(
-				"<p style='text-align:center; font-family: monospace; font-weight: bold'><a href='https://github.com/amattioc/SDMX'><b>amattioc/SDMX</b></a></p>");
-		buf.append("<p style='margin: 50px 0 30px 0; font-size: 90%'>Copyright 2010-2023 Bank Of Italy</p>");
+		buf.append("<p style='text-align:center; font-family: monospace; font-weight: bold'><a href='https://github.com/amattioc/SDMX'><b>amattioc/SDMX</b></a></p>");
+		buf.append("<p style='font-size: 90%'>Copyright 2010-2023 Bank Of Italy</p>");
 		buf.append("<div style='font-style: italic'>");
-		buf.append(
-				"<p><a href='http://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2017.128.01.0059.01.ENG'>");
+		buf.append("<p><a href='http://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2017.128.01.0059.01.ENG'>");
 		buf.append("Licensed under the EUPL, Version 1.2</a> or subsequent version (the \"Licence\");</p>");
 		buf.append("<p>You may not use this work except in compliance with the Licence.</p>");
-		buf.append("<p>The Work is provided under the Licence on an as-is<br />");
-		buf.append("basis and without warranties of any kind concerning the<br />");
-		buf.append("Work, including without limitation merchantability, fitness<br />");
-		buf.append("for a particular purpose, absence of defects or errors,<br />");
-		buf.append("accuracy, non-infringement of intellectual property rights<br />");
-		buf.append("other than copyright as stated in the Licence.</p>");
-		buf.append("<p>See the Licence for the specific language governing<br />");
-		buf.append("permissions and limitations under the Licence.</p></div>");
-		buf.append("<p style='font-size: 80%'>Build ID: <b>" + buildID + "</b></p>");
+		buf.append("<p>The Work is provided under the Licence on an as-is basis and without warranties of any kind concerning the Work, including without limitation merchantability, fitness for a particular purpose, absence of defects or errors, accuracy, non-infringement of intellectual property rights other than copyright as stated in the Licence.</p>");
+		buf.append("<p>See the Licence for the specific language governing permissions and limitations under the Licence.</p></div>");
+		buf.append("<p>Build: ").append(buildID).append("<br />");
+		buf.append("Revision: ").append(revisionID).append("</p>");
 		buf.append("</div>");
 
 		JEditorPane textPane = new JEditorPane("text/html", "");
@@ -109,19 +104,16 @@ public class AboutContentFrame extends JDialog
 		textPane.setBackground(UIManager.getColor("Panel.background"));
 		textPane.addHyperlinkListener(new HyperlinkListener() {
 			@Override
-			public void hyperlinkUpdate(HyperlinkEvent e)
+			public void hyperlinkUpdate(HyperlinkEvent event)
 			{
-				try
-				{
-					Desktop.getDesktop().browse(e.getURL().toURI());
-				}
-				catch (IOException e1)
-				{
-					// ignore
-				}
-				catch (URISyntaxException e1)
-				{
-					// impossible
+				if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+					try {
+						Desktop.getDesktop().browse(event.getURL().toURI());
+					} catch (IOException e1) {
+						// ignore
+					} catch (URISyntaxException e1) {
+						// impossible
+					}
 				}
 			}
 		});
