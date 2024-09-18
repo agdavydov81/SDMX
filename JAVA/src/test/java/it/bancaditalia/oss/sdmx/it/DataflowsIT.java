@@ -34,7 +34,7 @@ public class DataflowsIT
 				{ "WB",               "WDI",                             "WDI",                           "World Development Indicators" },
 				{ "UNDATA",           null,                              "DF_UNDATA_COUNTRYDATA",         "SDMX-CountryData" },
 				{ "OECD",             "AEO",                             "AEO",                           "African Economic Outlook" },
-				{ "ISTAT_RI",         null,                              "163_24",                        "Principali aggregati trimestrali di Contabilità Nazionale" },
+				{ "ISTAT_RI",         null,                              "163_24",                        "Principali aggregati trimestrali di Contabilita Nazionale" },
 				{ "ISTAT",            null,                              "144_125",                       "Nic - annuali sino al  2010" },
 				{ "BBK",          	  null,                              "BBASV",                         "Deutsche Bundesbank, Statistics on Insurance Corporations (Solvency I + II)" }
     		}, 0);

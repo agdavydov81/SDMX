@@ -29,6 +29,8 @@ import it.bancaditalia.oss.sdmx.exceptions.SdmxExceptionFactory;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxInvalidParameterException;
 import it.bancaditalia.oss.sdmx.util.RestQueryBuilder;
 
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.*;
+
 /**
  * @author Attilio Mattiocco
  *
@@ -62,7 +64,7 @@ public class Sdmx21Queries extends RestQueryBuilder {
 			}
 			//query.addPath("");
 			if (full) {
-				query.addParam("references", "children");
+				query.addParam(REFERENCES, CHILDREN);
 			}
 			return query;
 		} else

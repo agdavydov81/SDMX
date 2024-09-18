@@ -110,32 +110,42 @@ function ts = convertSeries(series, iso8601Date)
 	set(ts, 'UserData', cArrayMap);
 	ts.timeinfo.units='days';
 	set(ts, 'Name', char(name));
-    
+   
+end
+
+function dateCompat = convertMonthTokens(dates)
+    y = str2double(dates{1});
+    m = str2double(dates{2});
+    d = eomday(y, m);
+    dateCompat = [dates{1} '-' dates{2} '-' num2str(d)];
 end
 
 function dates = convertDates(freq, dates, iso8601Date)
-    
     if(nargin == 3 && iso8601Date == true)
         dates = datestr(datetime(dates,'InputFormat','uuuu-MM-dd''T''HH:mm:ss','TimeZone','UTC'));
+    elseif(strcmp(freq, 'M'))
+        t = regexp(dates, '^\s*(\d{4})-?M(\d{1,2})\s*$', 'tokens');
+        dates = cellfun(@(x) convertMonthTokens(x{1}), t, 'UniformOutput',false);
+        dates = cell2mat(dates);
     elseif(strcmp(freq, 'Q'))
 		dates=regexprep(dates, 'Q1', '03-31');
 		dates=regexprep(dates, 'Q2', '06-30');
 		dates=regexprep(dates, 'Q3', '09-30');
 		dates=regexprep(dates, 'Q4', '12-31');   
-		dates=(cell2mat(dates));
+        dates=(cell2mat(dates));
 	elseif(strcmp(freq, 'A'))
-		dates=strcat(cell2mat(dates), '-12-31');
-	elseif(strcmp(freq, 'H'))
+        dates=strcat(cell2mat(dates), '-12-31');
+	elseif(strcmp(freq, 'H') || strcmp(freq, 'S'))
 		dates=regexprep(dates, 'S1', '06-30');   
 		dates=regexprep(dates, 'S2', '12-31'); 
-		dates=(cell2mat(dates));
+        dates=(cell2mat(dates));
 	elseif(strcmp(freq, 'W'))
-		for i = 1 : length(dates)
-			dates{i} = char(it.bancaditalia.oss.sdmx.util.WeekConverter.convert(dates{i}));
-		end
-		dates=(cell2mat(dates));
-	else
-		dates=(cell2mat(dates));
+        for i = 1 : length(dates)
+            dates{i} = char(javaMethod('convert', 'it.bancaditalia.oss.sdmx.util.WeekConverter', dates{i}));
+        end
+        dates=(cell2mat(dates));
+    else
+        dates=(cell2mat(dates));
 	end
 end
 

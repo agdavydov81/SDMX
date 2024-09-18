@@ -196,6 +196,14 @@ public class SdmxClientHandler
 		}
 	}
 
+	public static void addProvider(final String provider,
+								   final String description,
+								   final String sdmxVersion,
+								   final String classFullName,
+								   final Object[] constructorArguments) throws SdmxInvalidParameterException {
+		SDMXClientFactory.addProvider(provider, description, sdmxVersion, classFullName, constructorArguments);
+	}
+
 	/**
 	 * Get the list of all available SDMX Providers
 	 * 
@@ -404,13 +412,17 @@ public class SdmxClientHandler
 			else
 			{
 				// this is a 2.1 provider
-				LOGGER.finer("Codelist for " + provider + ", " + dataflow + ", " + dimension + " not cached.");
-				codes = getClient(provider).getCodes(dsd.getDimension(dimension).getCodeList());
-				if (codes != null)
-					dim.setCodeList(codes);
-				else
+				try {
+					LOGGER.finer("Codelist for " + provider + ", " + dataflow + ", " + dimension + " not cached.");
+					codes = getClient(provider).getCodes(dsd.getDimension(dimension).getCodeList());
+					if (codes != null)
+						dim.setCodeList(codes);
+					else
+						throw new RuntimeException("CodeLists are null.");
+				} catch (Throwable e) {
 					throw new SdmxXmlContentException(
 							"Could not get codes for '" + dataflow + "' in provider: '" + provider + "'");
+				}
 			}
 		}
 		else
@@ -725,12 +737,12 @@ public class SdmxClientHandler
 				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				LoginDialog loginDlg = new LoginDialog(frame, client.getName() + " Authentication");
 				loginDlg.setVisible(true);
-				client.setCredentials(loginDlg.getUsername(), loginDlg.getPassword());
+				client.setAuthorization(RestSdmxClient.authorizationBasic(loginDlg.getUsername(), loginDlg.getPassword()));
 				frame.dispose();
 			}
 			else
 			{
-				client.setCredentials(user, pw);
+				client.setAuthorization(RestSdmxClient.authorizationBasic(user, pw));
 			}
 		}
 	}

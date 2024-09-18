@@ -41,22 +41,32 @@ public class SDMXReference
 		return version;
 	}
 
+	protected static final char DEFAULT_SEPARATOR = '/';
+
 	/**
 	 * @return The full identifier of this dataflow in the form "agency/id/version".
 	 */
 	public String getFullIdentifier()
 	{
-		return getFullIdWithSep('/');
+		return getFullIdWithSep(DEFAULT_SEPARATOR);
 	}
 
-	protected String getFullIdWithSep(char sep)
-	{
-		String fullId = id;
+	protected String getFullIdWithSep(char sep) {
+		return getFullIdWithSep(id, agency, version, sep);
+	}
+
+	public static String getFullIdentifier(final String id, final String agency, final String version) {
+		return getFullIdWithSep(id, agency, version, DEFAULT_SEPARATOR);
+	}
+
+	protected static String getFullIdWithSep(final String id, final String agency, final String version, final char sep) {
+		final StringBuilder sb = new StringBuilder();
 		if (agency != null)
-			fullId = agency + sep + fullId;
+			sb.append(agency).append(sep);
+		sb.append(id);
 		if (version != null)
-			fullId = fullId + sep + version;
-		return fullId;
+			sb.append(sep).append(version);
+		return sb.toString();
 	}
 	
 	@Override

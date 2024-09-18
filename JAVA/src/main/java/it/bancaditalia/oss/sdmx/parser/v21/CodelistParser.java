@@ -72,9 +72,7 @@ public class CodelistParser implements Parser<Codelist>
 	public static Codelist getCodeList(XMLEventReader eventReader, List<LanguageRange> languages)
 			throws XMLStreamException, SdmxException
 	{
-		String cl_id = null;
-		String agency = null;
-		String version = null;
+		SDMXReference coordinates = null;
 		while (eventReader.hasNext())
 		{
 			XMLEvent event = eventReader.nextEvent();
@@ -84,30 +82,13 @@ public class CodelistParser implements Parser<Codelist>
 				StartElement startElement = event.asStartElement();
 				if (CODELIST.equalsIgnoreCase(startElement.getName().getLocalPart()))
 				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
-					{
-						Attribute attr = attributes.next();
-						if (attr.getName().toString().equals(ID))
-						{
-							cl_id = attr.getValue();
-						}
-						else if (attr.getName().toString().equals(AGENCY))
-						{
-							agency = attr.getValue();
-						}
-						else if (attr.getName().toString().equals(VERSION))
-						{
-							version = attr.getValue();
-						}
-					}
-					logger.finest("Got codelist: " + cl_id);
+					coordinates = ConceptSchemeParser.parseReference(startElement);
+					logger.finest("Got codelist: " + coordinates.getId());
 					break;
 				}
 			}
 		}
-		return getCodes(new SDMXReference(cl_id, agency, version), eventReader, languages);
+		return getCodes(coordinates, eventReader, languages);
 	}
 
 	public static Codelist getCodes(SDMXReference coordinates, XMLEventReader eventReader, List<LanguageRange> languages) throws XMLStreamException, SdmxException
@@ -137,11 +118,8 @@ public class CodelistParser implements Parser<Codelist>
 					value = new LocalizedText(languages);
 					key = null;
 
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (valueID.equals(attr.getName().getLocalPart()))
 							key = attr.getValue();
 					}
@@ -152,11 +130,8 @@ public class CodelistParser implements Parser<Codelist>
 					parent = true;
 				else if (parent && REF.equals(startElement.getName().getLocalPart()))
 				{
-					@SuppressWarnings("unchecked")
-					Iterator<Attribute> attributes = startElement.getAttributes();
-					while (attributes.hasNext())
+					for (final Attribute attr : (Iterable<Attribute>) startElement::getAttributes)
 					{
-						Attribute attr = attributes.next();
 						if (valueID.equals(attr.getName().getLocalPart()))
 						{
 							parents.put(key, attr.getValue());

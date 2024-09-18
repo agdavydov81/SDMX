@@ -41,7 +41,7 @@ function dsd = getDSDIdentifier(provider, dataflow)
     end
     %try java code
     try
-        dsd = char(it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getDSDIdentifier(provider, dataflow));
+        dsd = char(javaMethod('getDSDIdentifier', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, dataflow));
     catch mexp
         error(['SDMX getDSDIdentifier() error:\n' mexp.message]);             
     end

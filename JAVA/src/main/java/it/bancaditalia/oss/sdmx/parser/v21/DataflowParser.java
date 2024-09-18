@@ -67,7 +67,7 @@ public class DataflowParser implements Parser<List<Dataflow>> {
 			if (event.isStartElement()) {
 				StartElement startElement = event.asStartElement();
 
-				if (startElement.getName().getLocalPart() == (DATAFLOW)) 
+				if (startElement.getName().getLocalPart().equals(DATAFLOW))
 				{
 					currentName = new LocalizedText(languages);
 					String id = null, agency = null, version = null;
@@ -81,9 +81,9 @@ public class DataflowParser implements Parser<List<Dataflow>> {
 					
 					df = new Dataflow(id, agency, version, currentName);
 				}
-				if (startElement.getName().getLocalPart() == (NAME))
+				if (startElement.getName().getLocalPart().equals(NAME))
 					currentName.setText(startElement, eventReader);
-				if (startElement.getName().getLocalPart() == (REF))
+				if (startElement.getName().getLocalPart().equals(REF))
 				{
 					String id = null, agency = null, version = null;
 					for (Attribute attr: (Iterable<Attribute>) startElement::getAttributes)

@@ -39,6 +39,9 @@ import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.SDMXReference;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
 
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.BASIC;
+import static it.bancaditalia.oss.sdmx.client.RestSdmxClient.BEARER;
+
 /**
  * 
  * @author Valentino Pinna
@@ -49,27 +52,43 @@ public class Provider {
 	private String description;
 	private URI endpoint;
 	private String sdmxVersion;
-	private boolean needsCredentials;
+	private String authorization;
 	private boolean needsURLEncoding;
 	private boolean supportsCompression;
 	private boolean full = false;
 	private boolean isCustom = false;
 
 	// key: flow id (full) --> flow
-	private Map<String, Dataflow> flows; 
+	private Map<String, Dataflow> flows = new HashMap<>();
 	// key: dsd id (full) --> structure
-	private Map<String, DataFlowStructure> dsdNameToStructureCache = null;
+	private Map<String, DataFlowStructure> dsdNameToStructureCache = new HashMap<>();
 	private SSLSocketFactory sslSocketFactory;
 
-	public Provider(String name, URI endpoint, KeyStore trustStore, boolean needsCredentials, 
+	private String fullClassName;
+	private Object[] constructorArguments;
+
+	public Provider(final String name, final String description, final String sdmxVersion, final String fullClassName, final Object[] constructorArguments) {
+		this.name = name;
+		this.description = description;
+		this.sdmxVersion = sdmxVersion;
+		this.fullClassName = fullClassName;
+		this.constructorArguments = constructorArguments;
+	}
+
+	public Provider(String name, URI endpoint, KeyStore trustStore, boolean needsCredentials,
+					boolean needsURLEncoding, boolean supportsCompression, String description,
+					boolean isCustom, String sdmxVersion) throws SdmxException {
+		this(name, endpoint, trustStore, needsCredentials ? BASIC : null,
+				needsURLEncoding, supportsCompression,  description, isCustom,  sdmxVersion);
+	}
+
+	public Provider(String name, URI endpoint, KeyStore trustStore, String authorization,
 			boolean needsURLEncoding, boolean supportsCompression, String description, 
 			boolean isCustom, String sdmxVersion) throws SdmxException {
 		this.name = name;
 		this.endpoint = endpoint;
 		this.description = description;
-		this.flows = new HashMap<>();
-		this.dsdNameToStructureCache = new HashMap<>();
-		this.needsCredentials = needsCredentials;
+		this.authorization = authorization;
 		this.needsURLEncoding = needsURLEncoding;
 		this.supportsCompression = supportsCompression;
 		this.isCustom = isCustom;
@@ -167,11 +186,15 @@ public class Provider {
 	}
 
 	public boolean isNeedsCredentials() {
-		return needsCredentials;
+		return BASIC.equals(authorization) || BEARER.equals(authorization);
 	}
 
-	public void setNeedsCredentials(boolean needsCredentials) {
-		this.needsCredentials = needsCredentials;
+	public String getAuthorization() {
+		return authorization;
+	}
+
+	public void setAuthorization(String authorization) {
+		this.authorization = authorization;
 	}
 
 	public void setFull(boolean full) {
@@ -218,4 +241,11 @@ public class Provider {
 		this.sdmxVersion = sdmxVersion;
 	}
 
+	public String getFullClassName() {
+		return fullClassName;
+	}
+
+	public Object[] getConstructorArguments() {
+		return constructorArguments != null ? constructorArguments : new Object[]{};
+	}
 }

@@ -89,11 +89,7 @@ public class LocalizedText
 	 */
 	public void setText(StartElement startElement, XMLEventReader eventReader) throws XMLStreamException
 	{
-		@SuppressWarnings("unchecked")
-		Iterator<Attribute> attributes = startElement.getAttributes();
-		while (attributes.hasNext())
-		{
-			Attribute attribute = attributes.next();
+		for (final Attribute attribute : (Iterable<Attribute>) startElement::getAttributes) {
 			if (attribute.getName().getLocalPart().equals(LANG))
 				put(attribute.getValue(), eventReader.getElementText());
 		}

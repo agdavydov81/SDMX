@@ -73,7 +73,7 @@ public class DataflowParser implements Parser<List<Dataflow>> {
 			{
 				StartElement startElement = event.asStartElement();
 
-				if (startElement.getName().getLocalPart() == (DATAFLOW)) 
+				if (startElement.getName().getLocalPart().equals(DATAFLOW))
 				{
 					currentName = new LocalizedText(languages);
 					String id = null, agency = null, version = null;
@@ -87,9 +87,9 @@ public class DataflowParser implements Parser<List<Dataflow>> {
 
 					df = new Dataflow(id, agency, version, currentName);
 				}
-				if (startElement.getName().getLocalPart() == (NAME))
+				if (startElement.getName().getLocalPart().equals(NAME))
 					currentName.setText(startElement, eventReader);
-				if (startElement.getName().getLocalPart() == (KF_REF))
+				if (startElement.getName().getLocalPart().equals(KF_REF))
 					setKeyFamily(df, eventReader);
 			}
 			else if (event.isEndElement() && DATAFLOW.equals(event.asEndElement().getName().getLocalPart()))
@@ -112,7 +112,7 @@ public class DataflowParser implements Parser<List<Dataflow>> {
 					case KF_AGID: agency = eventReader.getElementText(); break;
 					case KF_VER: version = eventReader.getElementText(); break;
 				}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (KF_REF))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(KF_REF))
 			{	
 				df.setDsdIdentifier(new SDMXReference(id, agency, version));
 				break;

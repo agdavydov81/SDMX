@@ -1,4 +1,4 @@
-function list = getTimeSeries(provider, id, startTime, endTime)  
+function list = getTimeSeries(provider, id, startTime, endTime)
 	% Extract a list of time series based on an input pattern
     %
     % Usage: getTimeSeries(provider, id, startTime, endTime)
@@ -6,8 +6,8 @@ function list = getTimeSeries(provider, id, startTime, endTime)
 	% Arguments
 	%
 	% provider: the name of the SDMX data provider
-	% id:   the key of the time series (can contain wildcards, 
-	%       e.g.    'EXR.M.USD.EUR.SP00.A' or 
+	% id:   the key of the time series (can contain wildcards,
+	%       e.g.    'EXR.M.USD.EUR.SP00.A' or
 	%               'EXR.M:*:EUR:SP00:A')
 	%
 	% startTime: the first observation time  (optional)
@@ -34,11 +34,11 @@ function list = getTimeSeries(provider, id, startTime, endTime)
 	% See the Licence for the specific language governing
 	% permissions and limitations under the Licence.
 	%
-    
+
     %deal with arguments
-    
+
     initClasspath;
-    
+
     if nargin <2
         error(sprintf(['\nUsage: getTimeSeriesTable(provider, id, startTime, endTime)\n\n' ...
                     'Arguments\n\n' ...
@@ -47,30 +47,30 @@ function list = getTimeSeries(provider, id, startTime, endTime)
                     '(can contain wildcards, ' ...
                     'e.g. "EXR.M.USD.EUR.SP00.A" or "EXR.M:*:EUR:SP00:A") \n'...
                     'startTime:   the desired start time  \n' ...
-                    'endTime:   the desired ending time ' ...      
+                    'endTime:   the desired ending time ' ...
                     ]));
-    end    
+    end
     if nargin < 4
         endTime = '';
-    end    
+    end
     if nargin < 3
         startTime = '';
     end
-    
+
     %try java code
     try
-        result = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getTimeSeries(provider, '', id, '', startTime, endTime, false, '', false); 
+        result = javaMethod('getTimeSeries', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, '', id, '', startTime, endTime, false, '', false);
 	catch mexp
-        error(sprintf('SDMX getTimeSeries() error:\n %s', mexp.message));      
+        error(sprintf('SDMX getTimeSeries() error:\n %s', mexp.message));
     end
-    
+
     %verify returned class type
-    if (~ isa(result, 'java.util.List')) 
+    if (~ isa(result, 'java.util.List'))
         error('SDMX getTimeSeries() returned class error.')
     end
-    
+
     %convert
-	list = convert(result);
-    
+	  list = convert(result);
+
 end
 

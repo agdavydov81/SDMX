@@ -113,7 +113,7 @@ public class CompactDataParser implements Parser<DataParsingResult>
 			{
 				StartElement startElement = event.asStartElement();
 
-				if (startElement.getName().getLocalPart() == (DATASET))
+				if (startElement.getName().getLocalPart().equals(DATASET))
 				{
 					logger.finer("Got new dataset");
 					for (Attribute attribute: (Iterable<Attribute>) startElement::getAttributes)
@@ -128,17 +128,17 @@ public class CompactDataParser implements Parser<DataParsingResult>
 							currentValidToDate = attribute.getValue();
 					}
 				}
-				else if (startElement.getName().getLocalPart() == (SERIES))
+				else if (startElement.getName().getLocalPart().equals(SERIES))
 				{
 					logger.finer("Got new time series");
 					metadata = getMetadata(startElement::getAttributes);
 				}
-				else if (startElement.getName().getLocalPart() == (FOOTER))
+				else if (startElement.getName().getLocalPart().equals(FOOTER))
 					message = getMessage(eventReader, languages);
 				else if (startElement.getName().getLocalPart().equals(OBS) && data)
 					obs.add(getObservation(eventReader, currentAction, currentValidFromDate, currentValidToDate, startElement::getAttributes));
 			}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (SERIES))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(SERIES))
 			{
 				PortableTimeSeries<Double> ts = new PortableTimeSeries<>(dataflow, metadata.getKey(), metadata.getValue(), obs);
 				tsList.putIfAbsent(ts.getName(), ts);
@@ -301,7 +301,7 @@ public class CompactDataParser implements Parser<DataParsingResult>
 			if (event.isStartElement())
 			{
 				StartElement startElement = event.asStartElement();
-				if (startElement.getName().getLocalPart() == (MESSAGE))
+				if (startElement.getName().getLocalPart().equals(MESSAGE))
 				{
 					msg = new Message();
 					for (Attribute attribute: (Iterable<Attribute>) startElement::getAttributes)
@@ -314,7 +314,7 @@ public class CompactDataParser implements Parser<DataParsingResult>
 							msg.setSeverity(value);
 					}
 				}
-				else if (startElement.getName().getLocalPart() == (TEXT))
+				else if (startElement.getName().getLocalPart().equals(TEXT))
 				{
 					String item = null;
 					LocalizedText text = new LocalizedText(languages);
@@ -333,7 +333,7 @@ public class CompactDataParser implements Parser<DataParsingResult>
 					}
 				}
 			}
-			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart() == (MESSAGE))
+			else if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(MESSAGE))
 			{
 				logger.finer("Adding footer message");
 				return msg;

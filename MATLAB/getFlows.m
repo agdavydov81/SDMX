@@ -30,36 +30,40 @@ function flows = getFlows(provider, pattern)
 	% See the Licence for the specific language governing
 	% permissions and limitations under the Licence.
 	%
-    
+
     initClasspath;
-    
+
     if nargin == 0
         error(sprintf(['\nUsage: getFlows(provider, pattern)\n\n' ...
                     'Arguments\n\n' ...
                         'provider: the name of the SDMX data provider\n' ...
                         'pattern: a wildcarded pattern to search (e.g. "Exchange*").' ...
                         'If null all flows are returned.\n' ...
-                    ]));            
-        
+                    ]));
+
     end
     if nargin < 2
 		pattern = '';
     end
     %get flows
     try
-        result = it.bancaditalia.oss.sdmx.client.SdmxClientHandler.getFlows(provider, pattern);
+        result = javaMethod('getFlows', 'it.bancaditalia.oss.sdmx.client.SdmxClientHandler', provider, pattern);
     catch mexp
-        error(['SDMX getFlows() error:\n' mexp.message]);             
-    end 
-    
+        error(['SDMX getFlows() error:\n' mexp.message]);
+    end
+
     %verify returned class type
     if (~ isa(result,'java.util.Map'))
         error('SDMX getFlows() returned class error.')
     end
-    
+
     %create Map
-	ids = cell(result.keySet.toArray);
-	description = cell(result.values.toArray);
-	flows = containers.Map(ids, description);
-    
+    jKeys = result.keySet().toArray();
+    jValues = result.values().toArray();
+    sz = javaMethod('getLength', 'java.lang.reflect.Array', jKeys);
+
+    ids = arrayfun(@(i) javaMethod('get', 'java.lang.reflect.Array', jKeys, i), (0:sz-1)', 'UniformOutput', false);
+  	description = arrayfun(@(i) javaMethod('get', 'java.lang.reflect.Array', jValues, i), (0:sz-1)', 'UniformOutput', false);
+
+	  flows = containers.Map(ids, description);
 end
