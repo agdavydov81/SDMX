@@ -4,7 +4,7 @@
 
 	<groupId>it.bancaditalia.oss</groupId>
 	<artifactId>sdmx</artifactId>
-	<version>3.0.6</version>
+	<version>3.0.7</version>
 
 	<name>SDMX</name>
 	<description>Sdmx Connectors for Statistical Software</description>
@@ -284,11 +284,13 @@
 				<configuration>
 					<archive>
 						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 							<mainClass>it.bancaditalia.oss.sdmx.helper.SDMXHelper</mainClass>
 						</manifest>
 						<manifestEntries>
+							<Implementation-Version>${project.version}</Implementation-Version>
 							<BUILD>${maven.build.timestamp}</BUILD>
 							<Revision>${buildNumber}</Revision>
 							<Automatic-Module-Name>it.bancaditalia.oss.sdmx</Automatic-Module-Name>
