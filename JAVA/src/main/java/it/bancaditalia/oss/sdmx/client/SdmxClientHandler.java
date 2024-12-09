@@ -483,7 +483,10 @@ public class SdmxClientHandler
 		if (flows == null || flows.size() == 0 || !p.isFull())
 		{
 			LOGGER.fine("Flows for " + provider + " not cached. Calling Provider.");
-			flows = getClient(provider).getDataflows();
+			final GenericSDMXClient client = getClient(provider);
+			if (client == null)
+				return null;
+			flows = client.getDataflows();
 			if (flows != null && flows.size() != 0)
 			{
 				p.setFlows(flows);
@@ -700,6 +703,8 @@ public class SdmxClientHandler
 		{
 			LOGGER.finer("Client for " + provider + " does not exist. I will create it.");
 			client = (GenericSDMXClient) SDMXClientFactory.createClient(provider);
+			if (client == null)
+				return null;
 			if (client.needsCredentials())
 				handlePassword(client, user, password);
 

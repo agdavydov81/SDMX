@@ -349,11 +349,13 @@ public class SDMXClientFactory {
 				throw new SdmxUnknownProviderException(providerName, e);
 			} catch (final InvocationTargetException e) {
 				final Throwable cause = e.getCause();
-				final StringWriter sw = new StringWriter();
-                cause.printStackTrace(new PrintWriter(sw));
-				final String causeStackTrace = sw.toString();
-				logger.severe("For provider " + providerName + " can't instantiate class " + providerFullClassName + " constructor because " + cause + " at " + causeStackTrace);
-				throw new SdmxUnknownProviderException(providerName, e);
+				if (!(cause instanceof UnsupportedOperationException)) {
+					final StringWriter sw = new StringWriter();
+					cause.printStackTrace(new PrintWriter(sw));
+					final String causeStackTrace = sw.toString();
+					logger.severe("For provider " + providerName + " can't instantiate class " + providerFullClassName + " constructor because " + cause + " at " + causeStackTrace);
+					throw new SdmxUnknownProviderException(providerName, e);
+				}
 			} catch (final InstantiationException | IllegalAccessException e) {
 				logger.severe("For provider " + providerName + " can't instantiate class " + providerFullClassName + " constructor with specified constructor arguments because " + e.getCause() + " exception " + e);
 				throw new SdmxUnknownProviderException(providerName, e);

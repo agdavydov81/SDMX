@@ -25,14 +25,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IMF_DATA extends RestSdmxClient {
-    public static final String PUBLIC_ENTRY_POINT = "https://apim-imfeid-dev-01.azure-api.net/sdmx/2.1";
+    public static final String PUBLIC_ENTRY_POINT = "https://api.imf.org/external/sdmx/2.1";
 
 
-    public static final  String PROTECTED_ENTRY_POINT = "https://quanthub-rls.imf-eid.projects.epam.com/api/v1/workspaces/default:integration/registry/sdmx/2.1";
+    public static final  String PROTECTED_ENTRY_POINT = "";
 
-    public static final String PROTECTED_CLIENT_ID = "bf03b113-5aa3-4585-a7d4-4b98160ec4ff";
-    public static final String PROTECTED_AUTHORITY = "https://login.microsoftonline.com/b41b72d0-4e9f-4c26-8a69-f949f367c91d/";
-    public static final String PROTECTED_SCOPE = "api://quanthub-rls.imf-eid.projects.epam.com/8fd30ba9-ee91-417c-8732-3080b50fd168/Quanthub.Login";
+    public static final String PROTECTED_CLIENT_ID = "";
+    public static final String PROTECTED_AUTHORITY = "";
+    public static final String PROTECTED_SCOPE = "";
 
     public static final String ENTRY_POINT_VAR = "entryPoint";
     public static final String CLIENT_ID_VAR = "clientId";
@@ -121,7 +121,7 @@ public class IMF_DATA extends RestSdmxClient {
                 return new EntryPointAndAuth(emptyToNull(curEntryPoint), emptyToNull(curClientId), emptyToNull(curAuthority),
                         curScopeArray, curOptionalHeadersProcessed.toArray(new String[][]{}));
             } else {
-                return new EntryPointAndAuth(PUBLIC_ENTRY_POINT, null, null, null, null);
+                throw new UnsupportedOperationException("Cancelled.");
             }
         }
 
