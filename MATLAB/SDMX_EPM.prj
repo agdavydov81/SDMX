@@ -1,8 +1,8 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="127369220" file="d:\Matlab work\SDMX\MATLAB\SDMX_EPM.prj" location="d:\Matlab work\SDMX\MATLAB" name="SDMX_EPM" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="127369220" file="D:\Matlab work\SDMX\MATLAB\SDMX_EPM.prj" location="D:\Matlab work\SDMX\MATLAB" name="SDMX_EPM" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>SDMX_EPM</param.appname>
     <param.authnamewatermark>Andrei Davydau</param.authnamewatermark>
-    <param.email>andrei_davydau1@epam.com</param.email>
+    <param.email />
     <param.company>EPAM Systems</param.company>
     <param.summary>SDMX iData Querying Toolbox</param.summary>
     <param.description>Project URL: https://github.com/agdavydov81/SDMX
@@ -44,7 +44,6 @@ Description: This is a fork of the https://github.com/amattioc/SDMX with some fi
     <param.additional.sw.mac.url />
     <param.additional.sw.linux.url />
     <unset>
-      <param.authnamewatermark />
       <param.email />
       <param.output />
       <param.products.name />
@@ -109,14 +108,44 @@ Description: This is a fork of the https://github.com/amattioc/SDMX with some fi
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="SDMX_EPM.mltbx" optional="false">d:\Matlab work\SDMX\MATLAB\SDMX_EPM.mltbx</file>
+      <file location="${PROJECT_ROOT}" name="SDMX_EPM.mltbx" optional="false">D:\Matlab work\SDMX\MATLAB\SDMX_EPM.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\Polyspace\R2019b</root>
+      <root>E:\MATLAB\R2024a</root>
       <toolboxes>
+        <toolbox name="matlabcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabhdlcoder" />
         <toolbox name="neuralnetwork" />
       </toolboxes>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
+      </toolbox>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
       <toolbox>
         <neuralnetwork>
           <enabled>true</enabled>
