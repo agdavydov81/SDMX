@@ -66,14 +66,36 @@ public class AboutContentFrame extends JDialog
 	{
 		String buildID = "NOT FOUND";
 		String revisionID = "NOT FOUND";
-		try (final InputStream manifestStream = AboutContentFrame.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
-			Attributes attributes = new Manifest(manifestStream).getMainAttributes();
-			String build = attributes.getValue("BUILD");
-			if (build != null && !build.trim().isEmpty())
-				buildID = build;
-			String revision = attributes.getValue("Revision");
-			if (revision != null && !revision.trim().isEmpty()) {
-				revisionID = revision;
+
+		try {
+			// Get the class loader for the class
+			Class<?> clazz = AboutContentFrame.class;
+
+			// Get the URL of the class file
+			String classFileName = clazz.getSimpleName() + ".class";
+			URL classFileUrl = clazz.getResource(classFileName);
+
+			if (classFileUrl != null) {
+				// Get the JAR file URL
+				String classFileUrlString = classFileUrl.toString();
+				if (classFileUrlString.startsWith("jar:")) {
+					String jarFileUrlString = classFileUrlString.substring(0, classFileUrlString.lastIndexOf("!/") + 2);
+
+					// Get the URL for the MANIFEST.MF file
+					URL manifestUrl = new URL(jarFileUrlString + "META-INF/MANIFEST.MF");
+
+					// Open a stream to the MANIFEST.MF file
+					try (InputStream manifestStream = manifestUrl.openStream()) {
+						Attributes attributes = new Manifest(manifestStream).getMainAttributes();
+						String build = attributes.getValue("BUILD");
+						if (build != null && !build.trim().isEmpty())
+							buildID = build;
+						String revision = attributes.getValue("Revision");
+						if (revision != null && !revision.trim().isEmpty()) {
+							revisionID = revision;
+						}
+					}
+				}
 			}
 		}
 		catch (IOException e) {

@@ -4,7 +4,7 @@
 
 	<groupId>it.bancaditalia.oss</groupId>
 	<artifactId>sdmx</artifactId>
-	<version>3.0.7</version>
+	<version>3.0.8</version>
 
 	<name>SDMX</name>
 	<description>Sdmx Connectors for Statistical Software</description>
@@ -249,6 +249,12 @@
 			<artifactId>msal4j</artifactId>
 			<version>1.17.1</version>
 		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.12.2</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>junit</groupId>

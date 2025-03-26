@@ -445,7 +445,8 @@ public class RestSdmxClient implements GenericSDMXClient {
                 }
 
                 try (Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-                    XMLInputFactory inputFactory = XMLInputFactory.newFactory();
+                    System.setProperty("javax.xml.stream.XMLInputFactory", "com.sun.xml.internal.stream.XMLInputFactoryImpl");
+                    XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                     preventXXE(inputFactory);
                     BufferedReader br = skipBOM(reader);
                     // InputStream in = new ByteArrayInputStream(xmlBuffer);

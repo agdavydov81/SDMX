@@ -5,6 +5,7 @@ import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.custom.IMF_DATA;
 import it.bancaditalia.oss.sdmx.exceptions.SdmxException;
+import org.junit.Test;
 
 import java.util.Collection;
 import java.util.List;
@@ -113,5 +114,27 @@ public class IMFDataClientTest {
                 sb.append(dimensionSelValue);
         }
         return sb.toString();
+    }
+
+    @Test
+    public void testMatlabCase() throws SdmxException {
+//        System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+//                "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+//
+//        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//        System.out.println("Using Factory: " + factory.getClass().getName());
+
+        final String provider = "IMF_DATA";
+        final String endPoint = "https://api.imf.org/external/sdmx/2.1";
+        // addProvider('IMF_DATA', 'https://api.imf.org/external/sdmx/2.1', false, false, false, 'test')
+        SdmxClientHandler.addProvider(provider, endPoint, false, false, false, "description");
+
+        final String id = "CPI/USA.CPI.CP01.IX.A";
+        final String startTime = "";
+        final String endTime = "";
+        // ts = getTimeSeries('IMF_DATA', 'CPI/USA.CPI.CP01.IX.A');
+        List<PortableTimeSeries<Double>> timeSeries = getTimeSeries(provider, "", id, "", startTime, endTime, false, "", false);
+        System.out.println(timeSeries);
+
     }
 }
