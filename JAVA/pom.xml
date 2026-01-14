@@ -4,7 +4,7 @@
 
 	<groupId>it.bancaditalia.oss</groupId>
 	<artifactId>sdmx</artifactId>
-	<version>3.0.8</version>
+	<version>3.0.9</version>
 
 	<name>SDMX</name>
 	<description>Sdmx Connectors for Statistical Software</description>
