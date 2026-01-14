@@ -161,7 +161,7 @@ class ToolCommandsFrame extends JFrame {
 		gbc_stataCommandLabel.gridy = 3;
 		panel.add(stataCommandLabel, gbc_stataCommandLabel);
 		
-		stataCommandText = new JTextField("getTimeSeries " + provider + " " + query + " \"\" \"\" 0 0");
+		stataCommandText = new JTextField("getTimeSeries \"" + provider + "\" \"" + query + "\" \"\" \"\" 0 0");
 		stataCommandLabel.setLabelFor(stataCommandText);
 		GridBagConstraints gbc_stataCommandText = new GridBagConstraints();
 		gbc_stataCommandText.insets = new Insets(0, 0, 5, 0);
